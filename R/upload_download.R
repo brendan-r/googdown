@@ -1,63 +1,81 @@
-library(magrittr)
+#' Authorize with Google Documents
+#'
+#' @param cache passed to httr
+#' @param client_id Unimplemented
+#' @param client_secret Unimplemented
+#'
+#' @return Used for it's side effects.
+#' @export
+gd_auth <- function(client_id, client_secret, cache = "~/.googdown_token") {
 
-
-# A function to generate tokens (not *yet* using a custom environment)
-gd_token <- function(cache = "~/.googdown_token") {
-  
   gd_app <- httr::oauth_app(
     key    = Sys.getenv("GOOGLE_CLIENT_ID"),
     secret = Sys.getenv("GOOGLE_CLIENT_SECRET"),
     "google"
   )
-  
+
   gd_token <- httr::oauth2.0_token(
     httr::oauth_endpoints("google"),
     gd_app,
     scope = "https://www.googleapis.com/auth/drive.file"
   )
-  
+
   # Set the token as an option
   options(
     gd.token       = gd_token,
     gd.token.cache = cache
   )
-  
+
   # TODO: Test the connection, write the environment vars (you can copy all this
   # from: https://github.com/brendan-r/boxr/blob/master/R/boxr_auth.R)
-  
+
   return(invisible(TRUE))
 }
 
-# Upload an md / Rmd file
+
+#' Upload a file to Google Docs
+#'
+#' @param file_name The name of the local file which you'd like to upload
+#' @param format The conversion format you'd like to use to upload it
+#'
+#' @return The httr response
+#' @export
 gd_upload <- function(
   file_name, format = defaultUploadFormat()
 ) {
 
   library(rmarkdown)
-  
+
   temp_dir <- tempdir()
-  
+
   local_file  <- rmarkdown::render(
     file_name, file_types()[[format]]$rmarkdown_writer(), clean = TRUE,
     output_dir = temp_dir
   )
-  
+
   req <- httr::POST(
     "https://www.googleapis.com/upload/drive/v2/files?convert=true",
     httr::config(token = getOption("gd.token")),
     body = httr::upload_file(local_file)
   )
-  
+
   req
 }
 
-# Download an Rmd / md file
+#' Download an A Google Doc as Markdown
+#'
+#' @param file_id The Google Doc ID of the document you'd like to download
+#' @param file_name The local file you'd like the Markdown data stored in
+#' @param format The conversion format you'd like to use
+#'
+#' @return The httr response
+#' @export
 gd_download <- function(
   file_id, file_name = "./file.md", format = defaultDownloadFormat()
 ) {
-  
+
   temp_file <- tempfile(fileext = file_types()[[format]]$file_ext)
-  
+
   req <- httr::GET(
     paste0(
       "https://www.googleapis.com/drive/v2/files/",
@@ -67,13 +85,13 @@ gd_download <- function(
     httr::config(token = getOption("gd.token")),
     httr::write_disk(temp_file, TRUE)
   )
-  
+
   system(
     paste0("pandoc ", temp_file, " -f ", file_types()[[format]]$pandoc_type,
-           " -t markdown"), 
+           " -t markdown"),
     intern = TRUE
   ) %>% writeLines(file_name)
-  
+
   req
 }
 
@@ -89,7 +107,7 @@ file_types <- function() {
       rmarkdown_writer = rmarkdown::rtf_document
     ),
     open_office_doc =	list(
-      file_ext = ".odt", pandoc_type = "odt", 
+      file_ext = ".odt", pandoc_type = "odt",
       mime_type = "application/vnd.oasis.opendocument.text",
       rmarkdown_writer = rmarkdown::odt_document
     ),
