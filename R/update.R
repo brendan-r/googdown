@@ -1,6 +1,6 @@
 
 # Upload an md / Rmd file
-gdoc_update <- function(
+gd_update <- function(
   file_name, file_id, format = defaultUploadFormat()
 ) {
   

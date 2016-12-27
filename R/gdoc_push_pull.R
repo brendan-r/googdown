@@ -18,7 +18,7 @@
 
 # TODO: Make all this run off the yaml
 
-gdoc_pull <- function(file) {
+gd_pull <- function(file) {
   
   # If there have been changes (as per the Drive API, then investigate)
   
@@ -30,7 +30,7 @@ gdoc_pull <- function(file) {
 
 # Note: You need to init the document first, to set the title (I think)
 
-gdoc_push <- function(file_name) {
+gd_push <- function(file_name) {
   # Convert the file to commonmark standard
   convert_to_commonmark(file_name)
 
@@ -45,7 +45,7 @@ gdoc_push <- function(file_name) {
     
     # Upload the file as new (ideally you'd ensure that the file is saved at
     # this point...)
-    up_resp <- gdoc_upload(file)
+    up_resp <- gd_upload(file)
     httr::stop_for_status(up_resp, "Failed to upload file to Google")
     catif("Google document successfully created")
     
@@ -59,7 +59,7 @@ gdoc_push <- function(file_name) {
     # Update the remote file
     doc_update_warning()
     
-    up_resp <- gdoc_update(file_name = file, file_id = yaml_vars$googdown$id)
+    up_resp <- gd_update(file_name = file, file_id = yaml_vars$googdown$id)
     httr::stop_for_status(up_resp, "Failed to upload file to Google")
     catif("Google document successfully updated")
     

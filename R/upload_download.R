@@ -2,7 +2,7 @@ library(magrittr)
 
 
 # A function to generate tokens (not *yet* using a custom environment)
-gdoc_token <- function(cache = "~/.googdown_token") {
+gd_token <- function(cache = "~/.googdown_token") {
   
   gd_app <- httr::oauth_app(
     key    = Sys.getenv("GOOGLE_CLIENT_ID"),
@@ -29,7 +29,7 @@ gdoc_token <- function(cache = "~/.googdown_token") {
 }
 
 # Upload an md / Rmd file
-gdoc_upload <- function(
+gd_upload <- function(
   file_name, format = defaultUploadFormat()
 ) {
 
@@ -52,7 +52,7 @@ gdoc_upload <- function(
 }
 
 # Download an Rmd / md file
-gdoc_download <- function(
+gd_download <- function(
   file_id, file_name = "./file.md", format = defaultDownloadFormat()
 ) {
   
