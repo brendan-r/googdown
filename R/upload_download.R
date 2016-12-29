@@ -121,10 +121,45 @@ gd_file_resource <- function(doc_id) {
 #' @return The httr response
 #' @export
 gd_download <- function(
-  file_id, file_name = "./file.md", format = defaultDownloadFormat()
+  file_id, file_name, format = defaultDownloadFormat(),
+  revision = NA, output_format = "commonmark"
 ) {
 
-  temp_file <- tempfile(fileext = file_types()[[format]]$file_ext)
+  temp_file <- tempfile()
+
+  if (is.na(revision)) {
+    req <- httr::GET(
+      paste0(
+        "https://www.googleapis.com/drive/v2/files/",
+        file_id,
+        "/export?mimeType=", file_types()[[format]]$mime_type
+      ),
+      httr::config(token = getOption("gd.token")),
+      httr::write_disk(temp_file, TRUE)
+    )
+  } else {
+    req <- httr::GET(
+      paste0(
+        "https://docs.google.com/feeds/download/documents/export/Export?id=",
+        doc_id, "&revision=", remote_rev, "exportFormat=",
+        file_types()[[format]]$pandoc_type
+      ),
+      httr::config(token = getOption("gd.token")),
+      httr::write_disk(temp_file, TRUE)
+    )
+  }
+
+  # Throw an error if there was one
+  httr::stop_for_status(req)
+
+  system(paste0(
+    "pandoc ", temp_file, " -f ", file_types()[[format]]$pandoc_type,
+    " -t ", output_format, " -o ", file_name
+  ))
+
+  return(invisible(TRUE))
+}
+
 
   req <- httr::GET(
     paste0(
