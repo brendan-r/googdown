@@ -14,84 +14,235 @@ gd_pull <- function(file) {
   # Try a simple find and replace for 'unknitting'
 }
 
+# Push / Render ----------------------------------------------------------------
+# Notes: This *should probably* end up as an rmarkdown output_format (which is
+# what jenny/noam did in gdoc). However, it's easiest to be lazy for the time
+# being
+
 #' Push an Rmarkdown document to Google Docs
 #'
 #' @param file_name The filepath of the Rmarkdown source code
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gd_push <- function(file_name) {
+gd_push <- function(file_name, format = defaultUploadFormat()) {
+
+  gd_auth()
+
   # Convert the file to commonmark standard
   convert_to_commonmark(file_name)
-
-  # Upload ---------------------------------------------------------------------
 
   # Extact the doc's body and YAML front matter
   yaml_vars <- rmarkdown::yaml_front_matter(file_name)
   body      <- partition_yaml_front_matter(readLines(file_name))$body
+  doc_id    <- yaml_vars$googdown$doc_id
+  doc_title <- yaml_vars$title
 
-  # If it looks like the doc hasn't been uploaded before, upload it
-  if (is.null(yaml_vars$googdown$doc_id)) {
+  # Knit / Render --------------------------------------------------------------
 
-    # Upload the file as new (ideally you'd ensure that the file is saved at
-    # this point...)
-    up_resp <- gd_upload(file)
-    httr::stop_for_status(up_resp, "Failed to upload file to Google")
-    catif("Google document successfully created")
+  temp_dir <- tempdir()
 
-    # Append the ID to the original file's YAML
-    yaml_vars$googdown$doc_id <- resp$id
+  rendered_file  <- rmarkdown::render(
+    file_name, file_types()[[format]]$rmarkdown_writer(), clean = FALSE,
+    output_dir = temp_dir
+  )
+
+  # Note: You don't need to do this, there are 'keep_md' options in the
+  # output_format optons
+  rendered_md  <- rmarkdown::render(
+    file_name, rmarkdown::md_document(), clean = FALSE,
+    output_dir = temp_dir
+  )
+
+  # Upload ---------------------------------------------------------------------
+  # If it looks like the doc hasn't been uploaded before, init a new one and
+  # return it's id
+  if (is.null(doc_id)) {
+
+    # Init an empty doc
+    init_respb <- init_empty_doc(doc_title)
+
+    catif("No doc_id detected in YAML headers: New Google Doc created")
+
+    # Append the ID to the original file's YAML data
+    doc_id   <- init_respb$id
+    yaml_vars$googdown$doc_id <- paste0('"', doc_id, '"')
     yaml_vars <- paste0("---\n", yaml::as.yaml(yaml_vars), "---\n")
+
     writeLines(c(yaml_vars, body), file_name)
+    catif("New doc_id added to source file's YAML headers")
 
   } else {
-
-    # Update the remote file
-    doc_update_warning()
-
-    up_resp <- gd_update(file_name = file, file_id = yaml_vars$googdown$id)
-    httr::stop_for_status(up_resp, "Failed to upload file to Google")
-    catif("Google document successfully updated")
-
+    # If you could blow comments out, warn the user
+    if (!doc_update_warning()) return(NULL)
   }
 
-  # Versioning -----------------------------------------------------------------
+  # Update / add content to the remote file
+  up_respb <- gd_update(rendered_file, doc_id)
+  catif("Google document content successfully updated")
 
-  # Create a dir for versioning
-  dir.create(".googdown/", showWarnings = FALSE)
-  # gitignore it
-  add_line(".googdown", ".gitignore")
 
-  # Use file_id/iteration-version for the dirs
+  # Versioning  / Caching
+  cache_version_files(doc_id, source = file_name, rendered_md)
 
-  # Create a local copy of the remote file's AST
-  remote_ast <- download_ast(file_id, file_name = "")
-  catif("Local copy of remote AST stored")
+  return(invisible(TRUE))
 }
 
 
-# Download the AST of a Google Doc
-ast_download <- function(
-  file_id, file_name = "ast.json", format = defaultDownloadFormat()
+
+# Caching functions -------------------------------------------------------
+
+
+
+#' A function for caching information about document state
+#'
+#' @param doc_id The Google ID of the document
+#' @param source The Rmd source file at the time of the run
+#' @param rendered_md The rendered md of the Rmd source file at the time of the
+#'   run
+#' @param cache_dir The dir used for caching
+#'
+#' @return Nothing
+cache_version_files <- function(
+  doc_id, source, rendered_md, cache_dir = getOption("gd.cache")
 ) {
 
-  temp_file <- tempfile(fileext = file_types()[[format]]$file_ext)
 
-  req <- httr::GET(
-    paste0(
-      "https://www.googleapis.com/drive/v2/files/",
-      file_id,
-      "/export?mimeType=", file_types()[[format]]$mime_type
-    ),
-    httr::config(token = getOption("gd.token")),
-    httr::write_disk(temp_file, TRUE)
-  )
+  # Caching functions ---------------------------------------------------------
 
-  system(
-    paste0("pandoc ", temp_file, " -f ", file_types()[[format]]$pandoc_type,
-           " -t json"),
-    intern = TRUE
-  ) %>% writeLines(file_name)
+  cache_file <- function(file, new_name = NULL, version = TRUE) {
 
-  req
+    # Create the directory (won't wipe anything if it already exists)
+    doc_dir <- file_path(cache_dir, doc_id)
+    dir.create(doc_dir, recursive = TRUE, showWarnings = FALSE)
+
+    # gitignore it (if it isn't already gitignored)
+    add_line(".gitignore", cache_dir)
+
+    # Get a name for the file, either new_name, or the file's original name
+    use_name <- if (is.null(new_name)) basename(file) else basename(new_name)
+
+    # Some files you want versioned, some files you don't
+    out_file <- if (version) {
+      file_path(doc_dir, paste0(doc_revision, "-", use_name))
+    } else {
+      file_path(doc_dir, use_name)
+    }
+
+    # Prefix the filename with the version number, and add to the cache directory
+    file.copy(file, out_file, overwrite = TRUE)
+  }
+
+
+  cache_run_status <- function() {
+    run_status_file <- file_path(cache_dir, doc_id, "runs.csv")
+
+    # Read in existing json (or init an empty list if it doesn't)
+    if (!file.exists(run_status_file)) {
+      csv <- data.frame()
+    } else {
+      csv <- read.csv(run_status_file, stringsAsFactors = FALSE)
+    }
+
+    # openssl has it's own classes, which are tricky to coerce
+    source_hash <- openssl::md5(brocks::read_txt(source))
+    class(source_hash) <- "character"
+
+
+    run_info <- data.frame(
+      operation    = "push",
+      doc_id       = doc_id,
+      time         = Sys.time(),
+      doc_revision = doc_revision,
+      source_md5   = source_hash,
+      stringsAsFactors = FALSE
+    )
+
+    # Append the latest run information, and write out the file
+    write.csv(row.names = FALSE, rbind(csv, run_info), run_status_file)
+
+    return(invisible(TRUE))
+  }
+
+  # Do the caching -------------------------------------------------------------
+
+  # You probably won't need all of these once the versioning / unknitting
+  # process settles down
+
+  # Extract the doc version
+  doc_revision <- latest_revision_from_local_metadata(doc_id, update = TRUE)
+
+  # Save the AST of the remote file
+  remote_ast <- download_ast(doc_id)
+
+  # Save the Rmd of the original file
+  cache_file(source, "source.Rmd")
+
+  # Save the AST of the original file
+  cache_file(md_to_ast(source), "source.ast")
+
+  # Save the MD of the knitted file
+  cache_file(rendered_md, "local.md")
+
+  # Save the AST of the knitted file
+  cache_file(md_to_ast(rendered_md), "local.ast")
+
+  # Save the MD of the remote file
+  cache_file(ast_to_md(remote_ast), "remote.md")
+
+  # Save the AST of the remote file
+  cache_file(remote_ast, "remote.ast")
+
+  # Write out some general information about the run
+  cache_run_status()
+}
+
+#' @export
+revision_list_from_local_metadata <- function(
+  doc_id, cache_dir = getOption("gd.cache"), update = FALSE
+) {
+  revisions_file <- file_path(cache_dir, doc_id, "revisions.json")
+
+  # Dowload if asked to (or if the file doesn't exist yet)
+  if (!file.exists(revisions_file) | update) {
+    writeLines(
+      jsonlite::toJSON(gd_revisions_ls(doc_id)),
+      revisions_file
+    )
+  }
+
+  jsonlite::fromJSON(brocks::read_txt(revisions_file))
+}
+
+#' @export
+latest_revision_from_local_metadata <- function(...) {
+  max(as.numeric(unlist(revision_list_from_local_metadata(...)$items$id)))
+}
+
+
+
+
+
+
+# Conversion between types ------------------------------------------------
+
+
+ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
+  # Note: Using 'commonmark' as that's the standard you want to keep to
+  system(paste0(
+    "pandoc --wrap=", defaultWrapBehavior(), " ", file,
+    " -f json -t commonmark -o ", new_file
+  ))
+
+  new_file
+}
+
+md_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
+  # Note: Using 'markdown' as opposed to 'commonmark', assuming that it's a
+  # little more permissive
+  system(paste(
+    "pandoc", file, "-f markdown -t json -o", new_file
+  ))
+
+  new_file
 }
