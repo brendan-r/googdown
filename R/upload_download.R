@@ -78,7 +78,9 @@ gd_upload <- function(
     body = httr::upload_file(local_file)
   )
 
-  req
+  # Throw an error if there was one
+  httr::stop_for_status(req)
+  httr::content(req)
 }
 
 #' Download an A Google Doc as Markdown
