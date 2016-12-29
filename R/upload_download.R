@@ -1,3 +1,22 @@
+init_empty_doc <- function(title) {
+
+  # The mime type for Google docs
+  gd_mime <- "application/vnd.google-apps.document"
+
+  # Create the new doc, return the raw response
+  req <- httr::POST(
+    "https://www.googleapis.com/drive/v2/files",
+    httr::config(token = getOption("gd.token")),
+    body = list(title = title, mimeType = gd_mime),
+    encode = "json"
+  )
+
+  # Throw an error if there was one
+  httr::stop_for_status(req)
+  httr::content(req)
+}
+
+
 #' Authorize with Google Documents
 #'
 #' @param cache passed to httr
