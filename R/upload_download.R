@@ -83,6 +83,21 @@ gd_upload <- function(
   httr::content(req)
 }
 
+gd_revisions_ls <- function(doc_id) {
+  req <- httr::GET(
+    paste0(
+      "https://www.googleapis.com/drive/v2/files/", doc_id,
+       "/revisions?maxResults=1000"
+    ),
+    httr::config(token = getOption("gd.token"))
+  )
+
+  # Throw an error if there was one
+  httr::stop_for_status(req)
+  httr::content(req)
+}
+
+
 #' Download an A Google Doc as Markdown
 #'
 #' @param file_id The Google Doc ID of the document you'd like to download
