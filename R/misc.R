@@ -55,30 +55,7 @@ check_doc_update_warning <- function() {
 #' @return \code{TRUE} (in)
 #' @export
 add_to_renviron <- function(x) {
-  if (length(x) != 1L | is.character(x))
-    stop("Must be a character vector of length 1")
-
-  env_path <- normalizePath(
-    paste0(Sys.getenv("HOME"), "/.Renviron"), mustWork = FALSE
-  )
-
-  if (file.exists(env_path)) {
-    renv <- readLines(env_path)
-  } else {
-    renv <- NULL
-  }
-
-  # The name of the variable which you're setting
-  var_name <- strsplit(x, "=")[[1L]][1L]
-
-  # Remove references where previously set, write new details to the end of the
-  # file
-  writeLines(
-    c(renv[!grepl(paste0(var_name, "="), renv)], paste0(x)),
-    con = env_path
-  )
-
-  return(invisible(TRUE))
+  add_line(file_path(Sys.getenv("HOME"), ".Renviron"), x)
 }
 
 
