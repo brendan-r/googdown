@@ -5,13 +5,38 @@
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gd_pull <- function(file) {
+gd_pull <- function(file_name, format = defaultUploadFormat()) {
+  gd_auth()
 
-  # If there have been changes (as per the Drive API, then investigate)
+  # Convert the file to commonmark standard
+  convert_to_commonmark(file_name)
 
-  # If the document AST is unchanged from the last pull, then do nothing
+  # Extact the doc's body and YAML front matter
+  yaml_vars <- rmarkdown::yaml_front_matter(file_name)
+  body      <- partition_yaml_front_matter(readLines(file_name))$body
+  doc_id    <- yaml_vars$googdown$doc_id
+  doc_title <- yaml_vars$title
 
-  # Try a simple find and replace for 'unknitting'
+
+  # Have there been any changes? If not, then go home early
+  # You might want to come up with a more specific function here; e.g. one that
+  # validates it was the last revision which came back from a push operation
+  local_rev  <- latest_revision_from_local_metadata(doc_id, update = FALSE)
+  remote_rev <- latest_revision_from_local_metadata(doc_id, update = TRUE)
+
+  if (local_rev == remote_rev) {
+    catif("No changes puled: Local and remote documents already in synch.")
+    return(invisible(TRUE))
+  }
+
+  # If there are differences, pull the remote ast in to the cache
+  remote_ast_path <- file_path(
+    getOption("gd.cache"), doc_id, paste0(remote_rev, "-remote.ast")
+  )
+
+  gd_download(doc_id, remote_ast_path, output_format = "json")
+
+
 }
 
 # Push / Render ----------------------------------------------------------------
