@@ -19,6 +19,8 @@ Imports:
     dplyr,
     digest,
     openssl,
+    brocks,
+    jsonlite,
     utils,
     stats
 Suggests:
