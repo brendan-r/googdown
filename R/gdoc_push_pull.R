@@ -1,20 +1,3 @@
-# # TODO
-#
-# - Try to get an end-to-end process going. Disregarding the JSON approach makes this easier, as there's no diffing for uploads, only downloads.
-#
-# The steps:
-#
-# - Document is written in .Rmd
-# - The AST of the remote doc (at that version) is downloaded for diffing
-# - A change is made to the google doc
-# - The AST of the new doc is downloaded
-# - The old and new ASTs are diffed
-# - The diff is somehow passed to the original md
-# - The diff is somehow passed to the original Rmd
-#
-# For a first-step, enforce common-mark standards on the input Rmd.
-#
-# The idea of diffing the remote ASTs is to preserve formatting which may not survive a round-trip, for example, formatting in-line or block code statements.
 
 #' Pull remote changes to a Google Doc to the source Rmarkdown file
 #'
