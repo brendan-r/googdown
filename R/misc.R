@@ -34,14 +34,15 @@ doc_update_warning <- function() {
 }
 
 prevent_doc_update_warning <- function() {
+  Sys.setenv(GOOGDOWN_UPDATE_WARN = FALSE)
   add_to_renviron("GOOGDOWN_UPDATE_WARN=FALSE")
 }
 
 # Should the user be warned about the document update behaviour?
 check_doc_update_warning <- function() {
-  warn <- Sys.getenv("GOOGDOWN_UPDATE_WARN")
+  warn <- as.logical(Sys.getenv("GOOGDOWN_UPDATE_WARN"))
 
-  if (is.null(warn)) return(TRUE)
+  if (is.na(warn))   return(TRUE)
   if (warn)          return(TRUE)
   if (!warn)         return(FALSE)
 }
