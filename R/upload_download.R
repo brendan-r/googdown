@@ -36,7 +36,8 @@ gd_auth <- function(client_id, client_secret, cache = "~/.googdown_token") {
   gd_token <- httr::oauth2.0_token(
     httr::oauth_endpoints("google"),
     gd_app,
-    scope = "https://www.googleapis.com/auth/drive.file"
+    scope = "https://www.googleapis.com/auth/drive.file",
+    cache = cache
   )
 
   # Set the token as an option
