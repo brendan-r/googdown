@@ -161,25 +161,34 @@ gd_download <- function(
 }
 
 
+# Note: This only gets called once, you can and probably should use gd_download
+# instead, and kill this off to reduce the amount of code that you're
+# maintaining.
+download_ast <- function(doc_id, format = defaultDownloadFormat()) {
+
+  google_output <- tempfile(fileext = file_types()[[format]]$file_ext)
+  ast_output    <- tempfile(fileext = ".ast")
+
   req <- httr::GET(
     paste0(
       "https://www.googleapis.com/drive/v2/files/",
-      file_id,
+      doc_id,
       "/export?mimeType=", file_types()[[format]]$mime_type
     ),
     httr::config(token = getOption("gd.token")),
-    httr::write_disk(temp_file, TRUE)
+    httr::write_disk(google_output, TRUE)
   )
 
-  system(
-    paste0("pandoc ", temp_file, " -f ", file_types()[[format]]$pandoc_type,
-           " -t markdown"),
-    intern = TRUE
-  ) %>% writeLines(file_name)
+  # If there was an error, throw one
+  httr::stop_for_status(req)
 
-  req
+  system(paste(
+    "pandoc", google_output, "-f", file_types()[[format]]$pandoc_type,
+    "-t json -o", ast_output
+  ))
+
+  ast_output
 }
-
 
 file_types <- function() {
   list(
