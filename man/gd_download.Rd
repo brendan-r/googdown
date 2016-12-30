@@ -4,8 +4,8 @@
 \alias{gd_download}
 \title{Download an A Google Doc as Markdown}
 \usage{
-gd_download(file_id, file_name = "./file.md",
-  format = defaultDownloadFormat())
+gd_download(file_id, file_name, format = defaultDownloadFormat(),
+  revision = NA, output_format = "commonmark")
 }
 \arguments{
 \item{file_id}{The Google Doc ID of the document you'd like to download}
