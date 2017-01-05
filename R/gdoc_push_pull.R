@@ -251,6 +251,8 @@ latest_revision_from_local_metadata <- function(...) {
 
 # Conversion between types ------------------------------------------------
 
+# For markdown -------------------------------------------
+
 
 ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
   system(paste0(
@@ -266,6 +268,21 @@ md_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
   paste("pandoc", file, "-f markdown -t json") %>%
     system(intern = TRUE) %>%
     jsonlite::prettify() %>%
+    writeLines(new_file)
+
+  new_file
+}
+
+
+# For Rmarkdown ---------------------------------------------
+
+ast_to_rmd <- function(file, new_file = tempfile(fileext = ".Rmd")) {
+
+  # Take the pandoc markdown output, and change the pandoc fenced code block
+  # attributes back into knitr chunk-option headers
+  ast_to_md(file) %>%
+    readLines() %>%
+    pandoc_fenced_to_knitr_block() %>%
     writeLines(new_file)
 
   new_file
