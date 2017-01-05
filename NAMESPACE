@@ -3,6 +3,7 @@
 export(add_to_renviron)
 export(file_path)
 export(gd_auth)
+export(gd_delete)
 export(gd_download)
 export(gd_pull)
 export(gd_push)
