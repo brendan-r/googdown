@@ -287,3 +287,17 @@ ast_to_rmd <- function(file, new_file = tempfile(fileext = ".Rmd")) {
 
   new_file
 }
+
+# Should you add the 'no_yaml' stage here?
+rmd_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
+
+  temp_file <- tempfile(fileext = ".Rmd")
+
+  # Turn knitr code chunks/blocks into pandoc fenced blocks with attributes
+  readLines(file) %>% knitr_block_to_pandoc_fenced() %>%
+    writeLines(temp_file)
+
+  # Convert the Rmarkdown file (now with code block headers pandoc can read)
+  # into JSON, prettify it, and write to the output file
+  md_to_ast(temp_file, new_file)
+}
