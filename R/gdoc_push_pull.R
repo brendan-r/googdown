@@ -253,10 +253,9 @@ latest_revision_from_local_metadata <- function(...) {
 
 
 ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
-  # Note: Using 'commonmark' as that's the standard you want to keep to
   system(paste0(
     "pandoc --wrap=", defaultWrapBehavior(), " ", file,
-    " -f json -t commonmark -o ", new_file
+    " -f json -t markdown -o ", new_file
   ))
 
   new_file
