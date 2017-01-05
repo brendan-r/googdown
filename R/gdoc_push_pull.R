@@ -262,11 +262,11 @@ ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
 }
 
 md_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
-  # Note: Using 'markdown' as opposed to 'commonmark', assuming that it's a
-  # little more permissive
-  system(paste(
-    "pandoc", file, "-f markdown -t json -o", new_file
-  ))
+
+  paste("pandoc", file, "-f markdown -t json") %>%
+    system(intern = TRUE) %>%
+    jsonlite::prettify() %>%
+    writeLines(new_file)
 
   new_file
 }
