@@ -52,4 +52,39 @@ diff_list <- function(file1, file2) {
 }
 
 
+# This function allows you to take local and remote markdown files, and create a
+# mapping between them so that changes to the remote file can be brought back to
+# the markdown source (without also bringing in changes which are peculiar to
+# the remote format, such as metadata ending up in the body (e.g. the document
+# title, author, etc.), image locations changing, and so on).
+map_lines <- function(file1, file2) {
+
+  library(magrittr)
+
+  n_1_lines <- length(readLines(file1))
+  n_2_lines <- length(readLines(file2))
+
+  # Init a data.frame with one row per line in file1
+  out <- data.frame(file1 = 1:n_1_lines, file2 = NA)
+
+  # Get the line-numbers for the things to find and replace
+  line_numbers <- diff_list(file1, file2)
+
+  # These are lines in remote_file which do not appear in local_file
+  new_lines <- line_numbers %>%
+    lapply(function(x) x$file1_remove) %>% unlist %>% na.omit
+
+  # These are lines in file2, which have been changed in file1
+  changed_lines <- line_numbers %>%
+    lapply(function(x) x$file2_add) %>% unlist %>% na.omit
+
+  # The lines from file2 which we want to map to file1 -- all the lines, less
+  # the changed ones
+  file2_lines_to_map <- 1:n_2_lines %>% .[!. %in% changed_lines]
+
+  out$file2[!out$file1 %in% new_lines] <- file2_lines_to_map
+
+  out
+}
+
 
