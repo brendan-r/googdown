@@ -1,3 +1,4 @@
+#' @export
 patch <- function(file1, file2, difflist, patched_file) {
 
   patch_strings(file1, file2, difflist) %>% writeLines(patched_file)
@@ -8,7 +9,7 @@ patch <- function(file1, file2, difflist, patched_file) {
   ))
 }
 
-
+#' @export
 patch_strings <- function(file1, file2, difflist) {
   l1 <- readLines(file1)
   l2 <- readLines(file2)
