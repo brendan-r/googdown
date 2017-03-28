@@ -1,4 +1,3 @@
-
 #' Pull remote changes to a Google Doc to the source Rmarkdown file
 #'
 #' @param file The path to the Rmarkdown file which you'd like to update
@@ -242,62 +241,4 @@ revision_list_from_local_metadata <- function(
 #' @export
 latest_revision_from_local_metadata <- function(...) {
   max(as.numeric(unlist(revision_list_from_local_metadata(...)$items$id)))
-}
-
-
-
-
-
-
-# Conversion between types ------------------------------------------------
-
-# For markdown -------------------------------------------
-
-
-ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
-  system(paste0(
-    "pandoc --wrap=", defaultWrapBehavior(), " ", file,
-    " -f json -t markdown -o ", new_file
-  ))
-
-  new_file
-}
-
-md_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
-
-  paste("pandoc", file, "-f markdown -t json") %>%
-    system(intern = TRUE) %>%
-    jsonlite::prettify() %>%
-    writeLines(new_file)
-
-  new_file
-}
-
-
-# For Rmarkdown ---------------------------------------------
-
-ast_to_rmd <- function(file, new_file = tempfile(fileext = ".Rmd")) {
-
-  # Take the pandoc markdown output, and change the pandoc fenced code block
-  # attributes back into knitr chunk-option headers
-  ast_to_md(file) %>%
-    readLines() %>%
-    pandoc_fenced_to_knitr_block() %>%
-    writeLines(new_file)
-
-  new_file
-}
-
-# Should you add the 'no_yaml' stage here?
-rmd_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
-
-  temp_file <- tempfile(fileext = ".Rmd")
-
-  # Turn knitr code chunks/blocks into pandoc fenced blocks with attributes
-  readLines(file) %>% knitr_block_to_pandoc_fenced() %>%
-    writeLines(temp_file)
-
-  # Convert the Rmarkdown file (now with code block headers pandoc can read)
-  # into JSON, prettify it, and write to the output file
-  md_to_ast(temp_file, new_file)
 }
