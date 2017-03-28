@@ -1,0 +1,14 @@
+H1
+==
+
+H2
+--
+
+Sentence, here.
+
+```{r block-name, fig.height=4, fig.width=5, blah='lol'}
+x <- 1:10
+plot(x)
+```
+
+Another sentence.
