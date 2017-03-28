@@ -3,6 +3,7 @@
 #
 # 'para' breaks each paragraph into one line, where as 'word' finds the lowest
 # level of content/type pairs in the pandoc ast
+#' @export
 fold_ast_json <- function(file_in, file_out, level = c("para", "word")) {
   # Read in the original pandoc json AST into R as a list
   json <- readLines(file_in) %>% from_json

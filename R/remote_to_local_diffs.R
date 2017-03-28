@@ -1,5 +1,4 @@
-
-
+#' @export
 remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
   map <- map_lines(remote1, local1)
@@ -50,6 +49,7 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
 }
 
+#' @export
 unknit_new_md <- function(
   original_rmd_ast, original_md_ast, new_md_ast, output_file = "_unknit.ast"
 ) {
