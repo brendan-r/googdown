@@ -1,25 +1,76 @@
+one_ct_pair <- function(x) {
+  if ("unMeta" %in% names(x))
+    return(TRUE)
+
+  if (depth(x) < 2)
+    return(TRUE)
+
+  if (is.null(names(x)))
+    return(FALSE)
+
+  # If you unlist, child nodes get the parent node's name appended with a dot
+  # inbetween. This is basically "if this node contains a child 't' node"
+  entry_names <- names(unlist(x))
+
+  all(!grepl("\\.", entry_names)) &
+    (sum(grepl("t", entry_names)) == 1L) &
+    length(x) == 2L &
+    names(x)[1] == "t" &
+    names(x)[2] == "c"
+}
+iii
+# This goes to the loest level of ct pairs
+wrap_ct <- function(x) {
+  if (one_ct_pair(x)) {
+    if (depth(x) < 1) return(x) else return(to_json(x))
+  } else {
+    lapply(x, wrap_ct)
+  }
+}
+
+selectively_split <- function(json) {
+  # A function to determine if a JSON entry is a pandoc para containing text of
+  # some sort (e.g., we want to split it into lines)
+  is_text_para <- function(x) {
+    if (!"t" %in% names(x)) {
+      return(FALSE)
+    }
+
+    if (x$t == "Para") {
+      # Extract the types contained within the node
+      child_types <- unique(unlist(x)[grepl("t$", names(unlist(x)))])
+      if ("Str" %in% child_types) return(TRUE) else return(FALSE)
+    }
+
+    return(FALSE)
+  }
+
+
+  split_or_wrap <- function(x) {
+    if (is_text_para(x)) {
+      list(t = x$t, c = wrap_ct(x$c))
+    } else {
+      to_json(x)
+    }
+  }
+
+  lapply(json, split_or_wrap)
+}
+
 # A tricky function which 'prettifies' JSON in a very specific ways, to make it
 # more amenable to line-by-line diffing.
 #
 # 'para' breaks each paragraph into one line, where as 'word' finds the lowest
 # level of content/type pairs in the pandoc ast
 #' @export
-fold_ast_json <- function(file_in, file_out, level = c("para", "word")) {
+fold_ast_json <- function(file_in, file_out) {
   # Read in the original pandoc json AST into R as a list
   json <- readLines(file_in) %>% from_json
 
-  if (!level %in% c("para", "word")) {
-    stop("invalid value of level")
-  }
+  # Get the metadata into one line
+  json[[1]] <- to_json(json[[1]])
 
-  # Iterate through the list, and turn parts of it *back into* JSON
-  # 'para' will do this by just going two layers deep
-  # 'word' will do this by finding the outermost 'childless' c/t pairs
-  if (level == "para") {
-    json <- lapply(json, function(x) lapply(x, to_json))
-  } else if (level == "word") {
-    json <- wrap_ct(json)
-  }
+  json[[2]] <- selectively_split(json[[2]])
 
   # Write the file out: A JSON text file, containg long strings, which just
   # happen to also be JSON
@@ -61,11 +112,29 @@ fold_ast_json <- function(file_in, file_out, level = c("para", "word")) {
   # And lose all the confusing escapted quotes
   lines <- gsub('\\\\"', '"', lines)
 
-  # cat(paste(lines, collapse = "\n"))
-  jsonlite::validate(lines)
+  if (!jsonlite::validate(lines)) {
+    stop("fold_json_ast: JSON validation lost")
+  }
 
-  # Check that it's valid JSON
-  stopifnot(jsonlite::validate(lines))
+  # Put spaces following words on the same line -------------------------------
+
+  lines <- paste(lines, collapse = "\n")
+
+  # lines <- gsub('\n[[:space:]]*\\{\"t\":\"Space"', '{"t":"Space"', lines)
+
+  lines <- gsub(
+    '\\{\"t\":\"Space",\"c\":\\[\\]\\}\n', '{"t":"Space","c":[]}',
+    lines
+  )
+
+  lines <- gsub(
+    '\\{\"t\":\"Space",\"c\":\\[\\]\\},\n', '{"t":"Space","c":[]},',
+    lines
+  )
+
+  if (!jsonlite::validate(lines)) {
+    stop("JSON validation lost after putting spaces on the same line as words")
+  }
 
   # Write out the results
   writeLines(lines, file_out)
@@ -75,6 +144,8 @@ fold_ast_json <- function(file_in, file_out, level = c("para", "word")) {
 
 
 
+# ------------------------------------------------------------------------------
+
 # Taken from https://stackoverflow.com/a/13433689
 # This needs to be re-written, it throws warnings all over the shop
 depth <- function(this, thisdepth = 0) {
@@ -83,20 +154,6 @@ depth <- function(this, thisdepth = 0) {
   } else {
     return(max(unlist(lapply(this, depth, thisdepth = thisdepth + 1))))
   }
-}
-
-# returns bool
-one_ct_pair <- function(x) {
-  if ("unMeta" %in% names(x))
-    return(TRUE)
-
-  if (depth(x) < 2)
-    return(TRUE)
-
-  # If you unlist, child nodes get the parent node's name appended with a dot
-  # inbetween. This is basically "if this node contains a child 't' node"
-  (!any(grepl("\\.t$", names(unlist(x))))) &
-    (sum(names(unlist(x)) == "t") == 1L)
 }
 
 # A function to wrap certain list depths to one line of JSON text. n = 2
@@ -109,16 +166,6 @@ wrap <- function(x, n = 2) {
   }
 }
 
-# This goes to the loest level of ct pairs
-wrap_ct <- function(x) {
-  if (one_ct_pair(x)) {
-    if (depth(x) < 1) return(x) else return(to_json(x))
-  } else {
-    lapply(x, wrap_ct)
-  }
-}
-
-
 from_json <- function(x, ...) {
   jsonlite::fromJSON(
     x, simplifyDataFrame = FALSE, simplifyVector = FALSE, flatten = TRUE, ...
@@ -128,4 +175,3 @@ from_json <- function(x, ...) {
 to_json <- function(x, ...) {
   jsonlite::toJSON(x, auto_unbox = TRUE, ...)
 }
-
