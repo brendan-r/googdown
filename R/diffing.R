@@ -1,5 +1,7 @@
-diff_list <- function(file1, file2) {
-  # The number after the letter -- you begin the chnage on the line below that
+#' @export
+diff_list <- function(file1, file2, ignore_trailing_commas = FALSE) {
+
+  # The number after the letter -- you begin the change on the line below that
   # Note: This is vectorized, but it doesn't really need to be
   normal_diff_to_lines <- function(diff_text) {
 
@@ -34,10 +36,24 @@ diff_list <- function(file1, file2) {
     out
   }
 
+  if (ignore_trailing_commas) {
+    # Diff tempfiles, less trailing commas. Trailing commas can cause you some
+    # pain; e.g. if B is added below A, then A acquires a trailing comma, and
+    # looks like it's been changed.
+    t1 <- tempfile()
+    t2 <- tempfile()
+
+    readLines(file1) %>% gsub(",[[:space:]]*$", "", .) %>% writeLines(t1)
+    readLines(file2) %>% gsub(",[[:space:]]*$", "", .) %>% writeLines(t2)
+  } else {
+    t1 <- file1
+    t2 <- file2
+  }
+
   # Run a diff on the files. You tried this without specifying useDiff. It ended
   # unexpectedly in misery! You may as well write your own system call to prevent
   # the messages being written out with cat.
-  diff_object <- tools::Rdiff(file1, file2, useDiff = TRUE, Log = TRUE)$out
+  diff_object <- tools::Rdiff(t1, t2, useDiff = TRUE, Log = TRUE)$out
 
   diff_object %>%
     # Sometimes the diff function can bork itself and return the text of the
@@ -57,7 +73,8 @@ diff_list <- function(file1, file2) {
 # the markdown source (without also bringing in changes which are peculiar to
 # the remote format, such as metadata ending up in the body (e.g. the document
 # title, author, etc.), image locations changing, and so on).
-map_lines <- function(file1, file2) {
+#' @export
+map_lines <- function(file1, file2, ...) {
 
   library(magrittr)
 
@@ -68,7 +85,7 @@ map_lines <- function(file1, file2) {
   out <- data.frame(file1 = 1:n_1_lines, file2 = NA)
 
   # Get the line-numbers for the things to find and replace
-  line_numbers <- diff_list(file1, file2)
+  line_numbers <- diff_list(file1, file2, ...)
 
   # These are lines in remote_file which do not appear in local_file
   new_lines <- line_numbers %>%
@@ -86,5 +103,3 @@ map_lines <- function(file1, file2) {
 
   out
 }
-
-
