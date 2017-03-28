@@ -18,7 +18,7 @@ one_ct_pair <- function(x) {
     names(x)[1] == "t" &
     names(x)[2] == "c"
 }
-iii
+
 # This goes to the loest level of ct pairs
 wrap_ct <- function(x) {
   if (one_ct_pair(x)) {
