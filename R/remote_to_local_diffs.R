@@ -64,9 +64,9 @@ unknit_new_md <- function(
   source_fold   <- "_folded_source.ast"
   new_fold      <- "_folded_new.ast"
 
-  fold_ast_json(original_rmd_ast, source_fold,  "word")
-  fold_ast_json(original_md_ast, rendered_fold, "word")
-  fold_ast_json(new_md_ast, new_fold, "word")
+  fold_ast_json(original_rmd_ast, source_fold)
+  fold_ast_json(original_md_ast, rendered_fold)
+  fold_ast_json(new_md_ast, new_fold)
 
   # For each line in the original local file, where are the corresponding lines
   # in the new file?
