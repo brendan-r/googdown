@@ -1,7 +1,14 @@
 #' @export
 patch <- function(file1, file2, difflist, patched_file) {
 
-  patch_strings(file1, file2, difflist) %>% writeLines(patched_file)
+  patch_strings(file1, file2, difflist) %>%
+    # Mush back into a single string to fix (this is so that you can detect
+    # paren-clashes that may span multiple lines)
+    paste(collapse = "\n") %>%
+    # If you've broken the JSON at some point (commas!), see if you can fix it
+    # with some very basic rules of thumb
+    fix_json() %>%
+    writeLines(patched_file)
 
   # Run it through pandoc once more, just to tidy up the AST
   system(paste(

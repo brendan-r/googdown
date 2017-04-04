@@ -4,7 +4,10 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
   map <- map_lines(remote1, local1)
 
   # Diff the two remote files, extract the lines which have changed
-  remote_diff <- diff_list(remote1, remote2)
+  # Before you do the diff, remove all commas at the end of lines, as these
+  # mean that adding an item to an object changes the object above
+  
+  remote_diff <- diff_list(remote1, remote2, ignore_trailing_commas = TRUE)
 
   # Determine if any of the diffs concern areas of the AST which can't
   # *meaningfully* be propagated back to the local markdown source's AST. All

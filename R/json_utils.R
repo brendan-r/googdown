@@ -1,3 +1,29 @@
+# A function to *try* and fix some common problems in json files caused by your
+# messing with them and the whole ignoring commas business
+fix_json <- function(string) {
+  # A general rule (at least in the JSON that you're generating) might be
+  # something like:
+  #
+  # - Where you see a closed paren followed by an open paren, whack a comma in
+  # - between
+  #
+  # - Where you see a closed paren followed by another closed paren, remove any
+  # - commas
+
+  original_string <- string
+  # If you have any curly braces back to back without a comma, fix it
+  string <- gsub("\\}[[:space:]]*\\{", "},{", string)
+  string <- gsub("\\][[:space:]]*\\[", "],[", string)
+  string <- gsub("\\][[:space:]]*\\{", "],{", string)
+  string <- gsub("\\}[[:space:]]*\\[", "},[", string)
+
+  if (any(original_string != string)) {
+    catif("Un-breaking the JSON caused during diffing\n")
+  }
+  
+  string
+}
+
 one_ct_pair <- function(x) {
   if ("unMeta" %in% names(x))
     return(TRUE)
@@ -141,7 +167,6 @@ fold_ast_json <- function(file_in, file_out) {
 
   return(invisible(TRUE))
 }
-
 
 
 # ------------------------------------------------------------------------------
