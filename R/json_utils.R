@@ -149,7 +149,9 @@ fold_ast_json <- function(file_in, file_out) {
 # Taken from https://stackoverflow.com/a/13433689
 # This needs to be re-written, it throws warnings all over the shop
 depth <- function(this, thisdepth = 0) {
-  if (!is.list(this)) {
+  if (length(this) == 0L) {
+    return(-Inf)
+  } else if (!is.list(this)) {
     return(thisdepth)
   } else {
     return(max(unlist(lapply(this, depth, thisdepth = thisdepth + 1))))
