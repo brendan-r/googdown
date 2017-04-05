@@ -1,0 +1,18 @@
+```{r echo=FALSE}
+# This is to test code blocks which produce no output, and so can't easily be
+# diffed
+d <- data.frame(x = rnorm(10), y = rnorm(10))
+```
+
+Important Subheading!!
+----------------------
+
+My favorite number is `r 2 + 2`. This is a remote change.
+
+A plot is there:
+
+```{r echo=FALSE}
+plot(d)
+```
+
+New-sentence.
