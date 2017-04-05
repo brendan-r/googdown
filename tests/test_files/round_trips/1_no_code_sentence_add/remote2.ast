@@ -1,59 +1,19 @@
 [
+{"unMeta":{}},
+  [
+{"t":"Header","c":[1,["heading",[],[]],[{"t":"Str","c":"Heading!"}]]},
     {
-        "unMeta": {
-
-        }
+"t": "Para",
+"c": [
+{"t":"Str","c":"Sentence."}
+      ]
     },
-    [
-        {
-            "t": "Header",
-            "c": [
-                1,
-                [
-                    "heading",
-                    [
-
-                    ],
-                    [
-
-                    ]
-                ],
-                [
-                    {
-                        "t": "Str",
-                        "c": "Heading!"
-                    }
-                ]
-            ]
-        },
-        {
-            "t": "Para",
-            "c": [
-                {
-                    "t": "Str",
-                    "c": "Sentence."
-                }
-            ]
-        },
-        {
-            "t": "Para",
-            "c": [
-                {
-                    "t": "Str",
-                    "c": "Also"
-                },
-                {
-                    "t": "Space",
-                    "c": [
-
-                    ]
-                },
-                {
-                    "t": "Str",
-                    "c": "sentence."
-                }
-            ]
-        }
-    ]
+    {
+"t": "Para",
+"c": [
+{"t":"Str","c":"Also"},
+{"t":"Space","c":[]},{"t":"Str","c":"sentence."}
+      ]
+    }
+  ]
 ]
-
