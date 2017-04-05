@@ -53,6 +53,17 @@ knitr_block_to_pandoc_fenced <- function(lines) {
 
 #' @export
 pandoc_fenced_to_knitr_block <- function(lines) {
+  # Pandoc folds down any line breaks in the code to the lolstring
+  # "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n". This function replaces that with \r\n,
+  # which should for some intents and purposes evaluate to \n
+  fix_line_breaks <- function(l) {
+    gsub(
+      "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n",
+      "\r\n", l
+    ) }
+
+  # This function converts pandoc fenced code-block style headers, to knitr
+  # style ones
   detect_and_change_headers <- function(l) {
     # Is this a pandoc code block/chunk header?
     is_block_header <- grepl("```[[:space:]]*\\{.*\\.r.*}[[:space:]]*$", l)
@@ -94,6 +105,8 @@ pandoc_fenced_to_knitr_block <- function(lines) {
 
     paste0("```{r", param_string, "}")
   }
-
-  lines %>% lapply(detect_and_change_headers) %>% unlist()
+  
+  lines %>%
+    lapply(function(x) fix_line_breaks(detect_and_change_headers(x))) %>%
+    unlist()
 }
