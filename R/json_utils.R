@@ -11,12 +11,20 @@ fix_json <- function(string) {
   # - commas
 
   original_string <- string
-  # If you have any curly braces back to back without a comma, fix it
+  
+  # If you have any curly or square braces back to back without a comma, fix it
   string <- gsub("\\}[[:space:]]*\\{", "},{", string)
   string <- gsub("\\][[:space:]]*\\[", "],[", string)
   string <- gsub("\\][[:space:]]*\\{", "],{", string)
   string <- gsub("\\}[[:space:]]*\\[", "},[", string)
 
+  # If you have a closed (square, curly) paren followed by another, with a comma
+  # in-between, remove it
+  string <- gsub("\\}[[:space:]]*,[[:space:]]*\\}", "}}", string)
+  string <- gsub("\\][[:space:]]*,[[:space:]]*\\]", "]]", string)
+  string <- gsub("\\][[:space:]]*,[[:space:]]*\\}", "]}", string)
+  string <- gsub("\\}[[:space:]]*,[[:space:]]*\\]", "}]", string)
+    
   if (any(original_string != string)) {
     catif("Un-breaking the JSON caused during diffing\n")
   }
