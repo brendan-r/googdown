@@ -62,3 +62,31 @@ rmd_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
   # into JSON, prettify it, and write to the output file
   md_to_ast(temp_file, new_file)
 }
+
+# This will take file, convert it to json, and then all the way back,
+# standardizing the way things are done within it (e.g. headings, chunks, etc.)
+
+
+# Convert a file to commonmark, using system pandoc
+standardize_rmd <- function(file) {
+  # Extact the yaml header, in order to reattach it later (not preserved)
+  partitioned_doc <- partition_yaml_front_matter(readLines(file))
+  old_body_file   <- tempfile(fileext = ".Rmd")
+  new_body_file   <- tempfile(fileext = ".Rmd")
+
+  # Write the body out to a tempfile for simplicity
+  writeLines(partitioned_doc$body, old_body_file)
+
+  # Run the body through the pandoc process, and back again
+  new_body_file <- ast_to_rmd(rmd_to_ast(old_body_file), old_body_file)
+
+  # Add the new, standardised body to the (unchanged YAML front matter)
+  partitioned_doc$body <- c("", readLines(new_body_file))
+
+  # Write the whole thing back to the original file
+  writeLines(unlist(partitioned_doc), file)
+
+  # Log something for the user
+  catif(file, " converted to standard pandoc markdown (with --wrap=",
+        defaultWrapBehavior(), ")")
+}
