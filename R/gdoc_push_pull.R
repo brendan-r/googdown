@@ -28,14 +28,67 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
     return(invisible(TRUE))
   }
 
+  # Get cache files in order --------------------------------------------------------
+  
+  # And the previous local and remote versions, for comparison
+  remote1_ast_path <- file_path(
+    getOption("gd.cache"), doc_id, paste0(local_rev, "-remote.ast")
+  )
+
+  local1_ast_path <- file_path(
+    getOption("gd.cache"), doc_id, paste0(local_rev, "-local.ast")
+  )
+
+  source1_ast_path <- file_path(
+    getOption("gd.cache"), doc_id, paste0(local_rev, "-source.ast")
+  )
+
+  # Download the new file -----------------------------------------------------------
+
   # If there are differences, pull the remote ast in to the cache
-  remote_ast_path <- file_path(
+  remote2_ast_path <- file_path(
     getOption("gd.cache"), doc_id, paste0(remote_rev, "-remote.ast")
   )
 
-  gd_download(doc_id, remote_ast_path, output_format = "json")
+  gd_download(doc_id, remote2_ast_path, output_format = "json")
+  catif("Downloading remote changes")
 
+  # Fold the JSON of the ast files
+  c(remote1_ast_path, remote2_ast_path, local1_ast_path, source1_ast_path) %>%
+    mapply(fold_ast_json, ., .)
+  
+  # Merging changes -----------------------------------------------------------------
 
+  md_merged_ast   <- tempfile(fileext = ".ast")
+  rmd_merged_ast  <- tempfile(fileext = ".ast")
+  rmd_merged_body <- tempfile(fileext = ".Rmd")
+ 
+  remote_diff_to_local(
+    remote1     = remote1_ast_path,
+    local1      = local1_ast_path,
+    remote2     = remote2_ast_path,
+    output_file = md_merged_ast
+  )
+
+  fold_ast_json(md_merged_ast, md_merged_ast)
+
+  unknit_new_md(
+    original_rmd_ast = source1_ast_path,
+    original_md_ast = local1_ast_path,
+    new_md_ast = md_merged_ast,
+    output_file = rmd_merged_ast
+  )
+
+  # Convert the AST back to Rmarkdown
+  ast_to_rmd(rmd_merged_ast, rmd_merged_body)
+
+  # Add the YAML back on
+  writeLines(
+    c("---", yaml::as.yaml(yaml_vars), "---", readLines(rmd_merged_body)),
+    file_name
+  )
+  
+  catif("Remote changes merged in to ", file_name)
 }
 
 # Push / Render ----------------------------------------------------------------
