@@ -24,7 +24,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   remote_rev <- latest_revision_from_local_metadata(doc_id, update = TRUE)
 
   if (local_rev == remote_rev) {
-    catif("No changes puled: Local and remote documents already in synch.")
+    catif("No changes pulled: Local and remote documents already in sync")
     return(invisible(TRUE))
   }
 
@@ -72,7 +72,7 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
   )
 
   # Note: You don't need to do this, there are 'keep_md' options in the
-  # output_format optons
+  # output_format options
   rendered_md  <- rmarkdown::render(
     file_name, rmarkdown::md_document(), clean = FALSE,
     output_dir = temp_dir
@@ -90,7 +90,7 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
 
     # Append the ID to the original file's YAML data
     doc_id   <- init_respb$id
-    yaml_vars$googdown$doc_id <- paste0('"', doc_id, '"')
+    yaml_vars$googdown$doc_id <- paste0(doc_id)
     yaml_vars <- paste0("---\n", yaml::as.yaml(yaml_vars), "---\n")
 
     writeLines(c(yaml_vars, body), file_name)
@@ -105,7 +105,6 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
   up_respb <- gd_update(rendered_file, doc_id)
   catif("Google document content successfully updated")
 
-
   # Versioning  / Caching
   cache_version_files(doc_id, source = file_name, rendered_md)
 
@@ -114,7 +113,8 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
 
 
 
-# Caching functions -------------------------------------------------------
+
+# Caching functions ---------------------------------------------------------------
 
 
 
@@ -130,9 +130,6 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
 cache_version_files <- function(
   doc_id, source, rendered_md, cache_dir = getOption("gd.cache")
 ) {
-
-
-  # Caching functions ---------------------------------------------------------
 
   cache_file <- function(file, new_name = NULL, version = TRUE) {
 
@@ -203,7 +200,7 @@ cache_version_files <- function(
   cache_file(source, "source.Rmd")
 
   # Save the AST of the original file
-  cache_file(md_to_ast(source), "source.ast")
+  cache_file(rmd_to_ast(source), "source.ast")
 
   # Save the MD of the knitted file
   cache_file(rendered_md, "local.md")
@@ -224,10 +221,16 @@ cache_version_files <- function(
 #' @export
 revision_list_from_local_metadata <- function(
   doc_id, cache_dir = getOption("gd.cache"), update = FALSE
-) {
+  ) {
+
+  # If the dir already exists, nothing will happen
+  dir.create(
+    file_path(cache_dir, doc_id), recursive = TRUE, showWarnings = FALSE
+  )
+  
   revisions_file <- file_path(cache_dir, doc_id, "revisions.json")
 
-  # Dowload if asked to (or if the file doesn't exist yet)
+  # Download if asked to (or if the file doesn't exist yet)
   if (!file.exists(revisions_file) | update) {
     writeLines(
       jsonlite::toJSON(gd_revisions_ls(doc_id)),

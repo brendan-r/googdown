@@ -11,4 +11,3 @@ gd_update <- function(local_file, file_id) {
   httr::stop_for_status(req)
   httr::content(req)
 }
-

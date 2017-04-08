@@ -58,36 +58,6 @@ add_to_renviron <- function(x) {
   add_line(file_path(Sys.getenv("HOME"), ".Renviron"), x)
 }
 
-
-# Convert a file to commonmark, using system pandoc
-convert_to_commonmark <- function(file) {
-  # Extact the yaml header, in order to reattach it later (not preserved)
-  partitioned_doc <- partition_yaml_front_matter(readLines(file))
-  old_body_file   <- tempfile(fileext = ".Rmd")
-  new_body_file   <- tempfile(fileext = ".Rmd")
-
-  # Write the body out to a tempfile for simplicity
-  writeLines(partitioned_doc$body, old_body_file)
-
-  command <- paste0(
-    "pandoc ", old_body_file,
-    " --from markdown --to commonmark --wrap=", defaultWrapBehavior(),
-    " --output=", new_body_file
-  )
-
-  system(command)
-
-  # Add the new, standardised body to the (unchanged YAML front matter)
-  partitioned_doc$body <- c("", readLines(new_body_file))
-
-  # Write the whole thing back to the original file
-  writeLines(unlist(partitioned_doc), file)
-
-  # Log something for the user
-  catif(file, " converted to the commonmark standard (with --wrap=",
-        defaultWrapBehavior(), ")")
-}
-
 catif <- function(...) {
   if (TRUE) cat(paste0(...))
 }
