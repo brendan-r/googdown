@@ -49,7 +49,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gd_push <- function(file_name, format = defaultUploadFormat()) {
+gdoc_push <- function(file_name, format = defaultUploadFormat()) {
 
   gd_auth()
 
