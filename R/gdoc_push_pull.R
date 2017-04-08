@@ -8,7 +8,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   gd_auth()
 
   # Convert the file to commonmark standard
-  convert_to_commonmark(file_name)
+  standardize_rmd(file_name)
 
   # Extact the doc's body and YAML front matter
   yaml_vars <- rmarkdown::yaml_front_matter(file_name)
@@ -54,7 +54,7 @@ gd_push <- function(file_name, format = defaultUploadFormat()) {
   gd_auth()
 
   # Convert the file to commonmark standard
-  convert_to_commonmark(file_name)
+  standardize_rmd(file_name)
 
   # Extact the doc's body and YAML front matter
   yaml_vars <- rmarkdown::yaml_front_matter(file_name)
