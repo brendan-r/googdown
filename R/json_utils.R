@@ -95,8 +95,9 @@ selectively_split <- function(json) {
 # more amenable to line-by-line diffing.
 #
 # 'para' breaks each paragraph into one line, where as 'word' finds the lowest
-# level of content/type pairs in the pandoc ast
+# level of content/type pairs in the Pandoc ast
 #' @export
+# The latest version. Seems to be alright with double quotes
 fold_ast_json <- function(file_in, file_out) {
   # Read in the original pandoc json AST into R as a list
   json <- readLines(file_in) %>% from_json
@@ -145,6 +146,8 @@ fold_ast_json <- function(file_in, file_out) {
 
   # And lose all the confusing escapted quotes
   lines <- gsub('\\\\"', '"', lines)
+  # If 
+  lines <- gsub('\\\\\\"', '"', lines)
 
   if (!jsonlite::validate(lines)) {
     stop("fold_json_ast: JSON validation lost")
@@ -175,6 +178,7 @@ fold_ast_json <- function(file_in, file_out) {
 
   return(invisible(TRUE))
 }
+
 
 
 # ------------------------------------------------------------------------------
