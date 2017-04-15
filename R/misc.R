@@ -58,6 +58,23 @@ add_to_renviron <- function(x) {
   add_line(file_path(Sys.getenv("HOME"), ".Renviron"), x)
 }
 
+# Version from boxr. Note: This updates the same line of text. Probably good in
+# a final version, but for now, get each statement on it's own line for clarity
+## catif <- function(...) {
+##   if (
+##     TRUE
+##     #getOption("googdown.verbose")
+##   ) {
+##     txt <- paste(..., collapse = " ")
+##     width <- max(getOption("width"), nchar(txt))
+    
+##     cat(paste0(
+##       "\r", txt, 
+##       paste(rep(" ", max(0, width - nchar(txt) - 1)), collapse = "")
+##     ))
+##   }
+## }
+
 catif <- function(...) {
-  if (TRUE) cat(paste0(...))
+  cat(paste(..., "\n", collapse = " "))
 }
