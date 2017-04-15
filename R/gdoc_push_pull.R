@@ -46,9 +46,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   # Download the new file -----------------------------------------------------------
 
   # If there are differences, pull the remote ast in to the cache
-  remote2_ast_path <- file_path(
-    getOption("gd.cache"), doc_id, paste0(remote_rev, "-remote.ast")
-  )
+  remote2_ast_path <- tempfile(fileext = ".ast")
 
   gd_download(doc_id, remote2_ast_path, output_format = "json")
   catif("Downloading remote changes")
@@ -59,9 +57,10 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   
   # Merging changes -----------------------------------------------------------------
 
-  md_merged_ast   <- tempfile(fileext = ".ast")
-  rmd_merged_ast  <- tempfile(fileext = ".ast")
-  rmd_merged_body <- tempfile(fileext = ".Rmd")
+  md_merged_ast     <- tempfile(fileext = ".ast")
+  rmd_merged_ast    <- tempfile(fileext = ".ast")
+  rmd_merged_body   <- tempfile(fileext = ".Rmd")
+  final_merged_file <- tempfile(fileext = ".Rmd")
  
   remote_diff_to_local(
     remote1     = remote1_ast_path,
@@ -85,7 +84,41 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   # Add the YAML back on
   writeLines(
     c("---", yaml::as.yaml(yaml_vars), "---", readLines(rmd_merged_body)),
-    file_name
+    final_merged_file
+  )
+
+  
+  # Test integrity of generated file ---------------------------------------------
+  
+  # TO REMOVE IN THE FUTURE
+  # Check that the markdown file which you 'unknit' to rmarkdown, produces a
+  # file which knits back to the markdown used to produce it. If you see what I
+  # mean.
+  # md merged as 'hard breaks'
+  # whereas knitted_md has 'soft breaks'
+  # Some pandoc setting somewhere needs to be made the same between the two
+  knitted_md_ast <- rmarkdown::render(
+    final_merged_file, rmarkdown::md_document(), clean = FALSE,
+    output_dir = tempdir()
+  ) %>%
+    md_to_ast()
+
+  if (!brocks::read_txt(knitted_md_ast) == brocks::read_txt(md_merged_ast)) {
+    warning("The Rmarkdown document produced doesn't produce the file that created it. Probably nbd")
+  } else {
+    catif("Merged Rmd file integrity checked: Successfully produces remote content")
+  }
+
+  
+  # Write out, end ---------------------------------------------------------------
+
+  # Copy the new file to the original file path
+  file.copy(final_merged_file, file_name, overwrite = TRUE)
+  
+  # Versioning  / Caching
+  cache_version_files(
+    doc_id = doc_id, doc_revision = remote_rev, source = file_name,
+    rendered_md = ast_to_md(md_merged_ast), remote_ast = remote2_ast_path
   )
   
   catif("Remote changes merged in to ", file_name)
@@ -166,11 +199,6 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
 
 
 
-
-# Caching functions ---------------------------------------------------------------
-
-
-
 #' A function for caching information about document state
 #'
 #' @param doc_id The Google ID of the document
@@ -178,11 +206,15 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
 #' @param rendered_md The rendered md of the Rmd source file at the time of the
 #'   run
 #' @param cache_dir The dir used for caching
-#'
+#' @param doc_revision Optional. Google's version number for the remote
+#'   doc. Will be determined with a call to
+#'   \code{\link{latest_revision_from_local_metadata}} if NULL (the default)
+#' @param remote_ast Optional. The filepath to the Pandoc AST of the remote
+#'   Google doc at doc_version. Will be retrieved from the remote document if
+#'   NULL (the default)
 #' @return Nothing
-cache_version_files <- function(
-  doc_id, source, rendered_md, cache_dir = getOption("gd.cache")
-) {
+cache_version_files <- function(doc_id, source, rendered_md, cache_dir = getOption("gd.cache"),
+                                doc_revision = NULL, remote_ast = NULL) {
 
   cache_file <- function(file, new_name = NULL, version = TRUE) {
 
@@ -244,10 +276,14 @@ cache_version_files <- function(
   # process settles down
 
   # Extract the doc version
-  doc_revision <- latest_revision_from_local_metadata(doc_id, update = TRUE)
+  if (is.null(doc_revision)) {
+    doc_revision <- latest_revision_from_local_metadata(doc_id, update = TRUE)
+  }
 
   # Save the AST of the remote file
-  remote_ast <- download_ast(doc_id)
+  if (is.null(remote_ast)) {
+    remote_ast <- download_ast(doc_id) 
+  }
 
   # Save the Rmd of the original file
   cache_file(source, "source.Rmd")

@@ -5,7 +5,8 @@
 \title{A function for caching information about document state}
 \usage{
 cache_version_files(doc_id, source, rendered_md,
-  cache_dir = getOption("gd.cache"))
+  cache_dir = getOption("gd.cache"), doc_revision = NULL,
+  remote_ast = NULL)
 }
 \arguments{
 \item{doc_id}{The Google ID of the document}
@@ -16,6 +17,14 @@ cache_version_files(doc_id, source, rendered_md,
 run}
 
 \item{cache_dir}{The dir used for caching}
+
+\item{doc_revision}{Optional. Google's version number for the remote
+doc. Will be determined with a call to
+\code{\link{latest_revision_from_local_metadata}} if NULL (the default)}
+
+\item{remote_ast}{Optional. The filepath to the Pandoc AST of the remote
+Google doc at doc_version. Will be retrieved from the remote document if
+NULL (the default)}
 }
 \value{
 Nothing
