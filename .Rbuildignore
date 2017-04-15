@@ -20,3 +20,4 @@ USAGE.md
 ^\.httr-oauth$
 ^CONDUCT\.md$
 .googdown
+^appveyor\.yml$
