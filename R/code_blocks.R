@@ -57,9 +57,11 @@ pandoc_fenced_to_knitr_block <- function(lines) {
   # "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n". This function replaces that with \r\n,
   # which should for some intents and purposes evaluate to \n
   fix_line_breaks <- function(l) {
-    unlist(strsplit(
-      l, "\\\\n"
-    ))
+    if (l == "") {
+      return("")
+    } else {
+     unlist(strsplit(l, "(\\\\)+n")) 
+    }
   }
 
   # This function converts pandoc fenced code-block style headers, to knitr
