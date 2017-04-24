@@ -2,8 +2,8 @@
 knitr_block_to_pandoc_fenced <- function(lines) {
   # Fail out if the special characters which you're using to sub for quotes are
   # in the string
-  if (any(grepl("¶|§", lines))) {
-    stop("Can't used the ascii characters ¶ or § in knitr blocks: Currently ",
+  if (any(grepl("§", lines))) {
+    stop("Can't used the ascii character § in knitr blocks: Currently ",
          "used internally by knitr_block_to_pandoc_fenced")
   }
 
@@ -17,27 +17,21 @@ knitr_block_to_pandoc_fenced <- function(lines) {
     # If not, return the original input
     if (!is_block_header) return(l)
 
-    # Extract the string containing params, and potentially the name
-    params <- l %>% gsub("```[[:space:]]*\\{r,?[[:space:]]*|\\}", "", .) %>%
-      strsplit(",") %>% unlist() %>% gsub("[[:space:]]+", "", .)
+    param_list <- l %>%
+      gsub("```[[:space:]]*\\{r,?[[:space:]]*|\\}", "", .) %>%
+      knitr:::parse_params()
 
-    # The name is going to be the param which does not feature an equals sign,
-    # if there is one. If there's more than one name, throw an informative
-    # error.
-    name   <- params[!grepl("=", params)]
-    params <- params[ grepl("=", params)]
+    # Extract & remove the chunk name, if there is one
+    name <- param_list$label
+    param_list$label <- NULL
 
-    # All parameters in a pandoc AST code block are strings. Parameters in knitr
-    # code blocks are often numbers (e.g. fig.height) or R varibles. Double
-    # quoting doesn't work. Here using the ascii ¶ symbol to sub for single
-    # quotes, § for double
-    params <- gsub("'", "¶", params)
-    params <- gsub('"', "§", params)
+    # For the remaining params, if they're strings, double quote them
+    param_list <- param_list %>% lapply(
+      function(x) if(!is.character(x)) x else paste0('"§', x, '§"')
+    )
 
-
-    if (length(name) > 1L) {
-      stop("Bad knitr chunk in .Rmd file: Appears to have more than one name.")
-    }
+    # Put the param list back into a vector of arg=val strings
+    params <- paste0(names(param_list), "=", unlist(param_list))
 
     # If there is a name, append # to it as per pandoc fenced attributes
     if (length(name) == 1L) {
@@ -51,6 +45,9 @@ knitr_block_to_pandoc_fenced <- function(lines) {
   lines %>% lapply(detect_and_change_headers) %>% unlist()
 }
 
+
+
+
 #' @export
 pandoc_fenced_to_knitr_block <- function(lines) {
   # Pandoc folds down any line breaks in the code to the lolstring
@@ -60,7 +57,7 @@ pandoc_fenced_to_knitr_block <- function(lines) {
     if (l == "") {
       return("")
     } else {
-     unlist(strsplit(l, "(\\\\)+n")) 
+     unlist(strsplit(l, "(\\\\)+n"))
     }
   }
 
@@ -76,7 +73,11 @@ pandoc_fenced_to_knitr_block <- function(lines) {
     # Look for a word starting with #
     name <- stringr::str_extract(l, "#[[:alnum:][:punct:]]*") %>%
       gsub("#", "", .) %>%
-      na.omit()
+    na.omit()
+
+    # A regular expression to replace all spaces in a string which are not
+    # between quotes (http://stackoverflow.com/a/9584469)
+    space_reg <- "\\s+(?=((\\\\[\\\\\"]|[^\\\\\"])*\"(\\\\[\\\\\"]|[^\\\\\"])*\")*(\\\\[\\\\\"]|[^\\\\\"])*$)"
 
     params <- l %>%
       # Remove everything that isn't a param
@@ -88,14 +89,15 @@ pandoc_fenced_to_knitr_block <- function(lines) {
       # Remove space at the start / end of the line
       gsub("^[[:space:]]|[[:space:]]$", "", .) %>%
       # Split on spaces
-      strsplit(" ") %>% unlist
+      stringr::str_split(space_reg) %>% unlist
 
-    # Because pandoc doesn't accept strings as fenced code-block arguments, we
-    # replace single/double quotes with the ascii symbols ¶/§ in
-    # `knitr_block_to_pandoc_fenced`. Sub them back now. out now
+    # Because to pandoc all fenced code-block attributes are strings (and
+    # double/escaped freak it out) double quotes are replaced with the ascii
+    # symbols § in `knitr_block_to_pandoc_fenced`. Here, remove all existing
+    # double quotes, and replace § with new double quotes
     params       <- gsub('"', '',  params)
-    params       <- gsub('¶', "'", params)
     params       <- gsub('§', '"', params)
+
 
     param_string <- paste0(c(name, params), collapse = ", ")
 
@@ -107,7 +109,7 @@ pandoc_fenced_to_knitr_block <- function(lines) {
 
     paste0("```{r", param_string, "}")
   }
-  
+
   lines %>%
     lapply(function(x) fix_line_breaks(detect_and_change_headers(x))) %>%
     unlist()
