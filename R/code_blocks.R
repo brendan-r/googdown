@@ -30,12 +30,19 @@ knitr_block_to_pandoc_fenced <- function(lines) {
       function(x) if(!is.character(x)) x else paste0('"§', x, '§"')
     )
 
-    # Put the param list back into a vector of arg=val strings
-    params <- paste0(names(param_list), "=", unlist(param_list))
+    # Put the param list back into a vector of arg=val strings (if there are
+    # any)
+    if (length(param_list) > 0L) {
+      params <- paste0(names(param_list), "=", unlist(param_list))
+    } else {
+      params <- NULL
+    }
 
     # If there is a name, append # to it as per pandoc fenced attributes
-    if (length(name) == 1L) {
+    if (length(name) == 1L & !grepl("unnamed-chunk-[0-9]+$", name)) {
       name <- paste0("#", name)
+    } else {
+      name <- NULL
     }
 
     # Re-assemble the parts back into pandoc fenced-code-block attributes
