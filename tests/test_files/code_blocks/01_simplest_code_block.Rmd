@@ -1,0 +1,6 @@
+```{r}
+
+# This is a comment with 'both' types of "quotation marks" in it
+plot(rnorm(100), main="This is just to test'quotation marks'")
+
+```
