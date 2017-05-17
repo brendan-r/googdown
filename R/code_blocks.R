@@ -106,7 +106,7 @@ pandoc_fenced_to_knitr_block <- function(lines) {
     params       <- gsub('§', '"', params)
 
     # If params == "" replace with NULL to prevent hanging commas
-    if (params == "") params <- NULL
+    params <- subset(params, params != "")
 
     param_string <- paste0(c(name, params), collapse = ", ")
 
