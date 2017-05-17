@@ -3,7 +3,7 @@
 # For markdown -------------------------------------------
 ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
   system(paste0(
-    "pandoc --wrap=", defaultWrapBehavior(), " ", file,
+    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
     " -f json -t markdown -o ", new_file
   ))
 
@@ -24,7 +24,7 @@ md_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
 # 'standardize' the markdown conventions used
 md_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
   system(paste0(
-    "pandoc --wrap=", defaultWrapBehavior(), " ", file,
+    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
     " -f markdown -t markdown -o ", new_file
   ))
 

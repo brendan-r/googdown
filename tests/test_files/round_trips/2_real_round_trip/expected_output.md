@@ -1,5 +1,4 @@
-Important Subheading!!
-----------------------
+## Important Subheading!!
 
 My favorite number is 4. This is a remote change.
 

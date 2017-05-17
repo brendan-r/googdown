@@ -4,8 +4,7 @@
 d <- data.frame(x = rnorm(10), y = rnorm(10))
 ```
 
-Important Subheading!!
-----------------------
+## Important Subheading!!
 
 My favorite number is `r 2 + 2`. This is a remote change.
 

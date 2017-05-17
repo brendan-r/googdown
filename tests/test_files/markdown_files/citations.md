@@ -1,5 +1,4 @@
-Citation Test
-=============
+# Citation Test
 
 The idea of *literate programming* was first proposed to Donald Knuth [-@knuth], and it's applications realised in the context of reproducible research with the Splus and R dialects of the S language, by @leisch with the 'Sweave' package.
 

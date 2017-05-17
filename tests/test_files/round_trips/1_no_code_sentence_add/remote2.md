@@ -1,5 +1,4 @@
-Heading!
-========
+# Heading!
 
 Sentence.
 

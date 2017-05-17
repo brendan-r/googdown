@@ -1,10 +1,8 @@
-This is a H1
-============
+# This is a H1
 
 Some words.
 
-This is a H2
-------------
+## This is a H2
 
 Some words.
 
