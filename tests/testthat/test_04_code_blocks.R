@@ -3,7 +3,7 @@ context("Code Blocks")
 test_that("Code block changes are reversible", {
 
   cb_test_files <- normalizePath(list.files(
-    "../test_files/code_blocks//", full.names = T
+    "../test_files/code_blocks/", full.names = T
   ))
 
   # Remove the files which have commas at '```{r,' which gets lost in your
@@ -26,6 +26,10 @@ test_that("Code block changes are reversible", {
 
 
 test_that("Code block translations can be understood by Pandoc", {
+
+  cb_test_files <- normalizePath(list.files(
+    "../test_files/code_blocks/", full.names = T
+  ))
 
   for (f in cb_test_files) {
 
