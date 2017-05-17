@@ -1,0 +1,6 @@
+```{r, this-name, fig.height=4, fig.width=8, fig.cap="This is a long string with some 'single quotes'"}
+
+# This is a comment with 'both' types of "quotation marks" in it
+plot(rnorm(100), main="This is just to test'quotation marks'")
+
+```
