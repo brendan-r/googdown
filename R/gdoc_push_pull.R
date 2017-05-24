@@ -135,70 +135,74 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
+## gdoc_push <- function(file_name, format = defaultUploadFormat()) {
+
+##   gd_auth()
+
+##   # Convert the file to 'standard' markdown
+##   standardize_rmd(file_name)
+
+##   # Extact the doc's body and YAML front matter
+##   yaml_vars <- rmarkdown::yaml_front_matter(file_name)
+##   body      <- partition_yaml_front_matter(readLines(file_name))$body
+##   doc_id    <- yaml_vars$googdown$doc_id
+##   doc_title <- yaml_vars$title
+
+##   # Knit / Render --------------------------------------------------------------
+
+##   temp_dir <- tempdir()
+
+##   rendered_file  <- rmarkdown::render(
+##     file_name,
+##     file_types()[[format]]$rmarkdown_writer(reference_odt = "~/.pandoc/custom-reference.odt"),
+##     clean = FALSE,
+##     output_dir = temp_dir
+##   )
+
+##   # Note: You don't need to do this, there are 'keep_md' options in the
+##   # output_format options
+##   rendered_md  <- rmarkdown::render(
+##     file_name, rmarkdown::md_document(), clean = FALSE,
+##     output_dir = temp_dir
+##   )
+
+##   # Upload ---------------------------------------------------------------------
+##   # If it looks like the doc hasn't been uploaded before, init a new one and
+##   # return it's id
+##   if (is.null(doc_id)) {
+
+##     # Init an empty doc
+##     init_respb <- init_empty_doc(doc_title)
+
+##     catif("No doc_id detected in YAML headers: New Google Doc created")
+
+##     # Append the ID to the original file's YAML data
+##     doc_id   <- init_respb$id
+##     yaml_vars$googdown$doc_id <- paste0(doc_id)
+##     yaml_vars <- paste0("---\n", yaml::as.yaml(yaml_vars), "---\n")
+
+##     writeLines(c(yaml_vars, body), file_name)
+##     catif("New doc_id added to source file's YAML headers")
+
+##   } else {
+##     # If you could blow comments out, warn the user
+##     if (!doc_update_warning()) return(NULL)
+##   }
+
+##   # Update / add content to the remote file
+##   up_respb <- gd_update(rendered_file, doc_id)
+##   catif("Google document content successfully updated")
+
+##   # Versioning  / Caching
+##   cache_version_files(doc_id, source = file_name, rendered_md)
+
+##   return(invisible(TRUE))
+## }
+
+
 gdoc_push <- function(file_name, format = defaultUploadFormat()) {
-
-  gd_auth()
-
-  # Convert the file to 'standard' markdown
-  standardize_rmd(file_name)
-
-  # Extact the doc's body and YAML front matter
-  yaml_vars <- rmarkdown::yaml_front_matter(file_name)
-  body      <- partition_yaml_front_matter(readLines(file_name))$body
-  doc_id    <- yaml_vars$googdown$doc_id
-  doc_title <- yaml_vars$title
-
-  # Knit / Render --------------------------------------------------------------
-
-  temp_dir <- tempdir()
-
-  rendered_file  <- rmarkdown::render(
-    file_name,
-    file_types()[[format]]$rmarkdown_writer(reference_odt = "~/.pandoc/custom-reference.odt"),
-    clean = FALSE,
-    output_dir = temp_dir
-  )
-
-  # Note: You don't need to do this, there are 'keep_md' options in the
-  # output_format options
-  rendered_md  <- rmarkdown::render(
-    file_name, rmarkdown::md_document(), clean = FALSE,
-    output_dir = temp_dir
-  )
-
-  # Upload ---------------------------------------------------------------------
-  # If it looks like the doc hasn't been uploaded before, init a new one and
-  # return it's id
-  if (is.null(doc_id)) {
-
-    # Init an empty doc
-    init_respb <- init_empty_doc(doc_title)
-
-    catif("No doc_id detected in YAML headers: New Google Doc created")
-
-    # Append the ID to the original file's YAML data
-    doc_id   <- init_respb$id
-    yaml_vars$googdown$doc_id <- paste0(doc_id)
-    yaml_vars <- paste0("---\n", yaml::as.yaml(yaml_vars), "---\n")
-
-    writeLines(c(yaml_vars, body), file_name)
-    catif("New doc_id added to source file's YAML headers")
-
-  } else {
-    # If you could blow comments out, warn the user
-    if (!doc_update_warning()) return(NULL)
-  }
-
-  # Update / add content to the remote file
-  up_respb <- gd_update(rendered_file, doc_id)
-  catif("Google document content successfully updated")
-
-  # Versioning  / Caching
-  cache_version_files(doc_id, source = file_name, rendered_md)
-
-  return(invisible(TRUE))
+  rmarkdown::render(file_name, output_format = google_doc())
 }
-
 
 
 pre_knit <- function(input) {
