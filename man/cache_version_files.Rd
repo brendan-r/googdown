@@ -32,4 +32,5 @@ Nothing
 \description{
 A function for caching information about document state
 }
+\keyword{internal}
 

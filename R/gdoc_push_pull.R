@@ -139,7 +139,14 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
   rmarkdown::render(file_name, output_format = google_doc())
 }
 
-
+##' googdown pre-knit hook
+##'
+##' It simply checks google auths, and then 'standardizes' the Rmarkdown file,
+##' using \code{\link{standardize_rmd}}
+##'
+##' @param input
+##' @return Used for its side effects
+##' @keywords internal
 pre_knit <- function(input) {
 
   # Check auth
@@ -150,7 +157,18 @@ pre_knit <- function(input) {
 
 }
 
-
+##' googdown's post processor (run after pandoc)
+##'
+##' Uploads the file to google docs, adds the doc_id to the YAML front matter,
+##' and caches some local files.
+##'
+##' @param metadata Supplied by \code{rmarkdown::\link{output_format}}
+##' @param input_file Supplied by \code{rmarkdown::\link{output_format}}
+##' @param output_file Supplied by \code{rmarkdown::\link{output_format}}
+##' @param clean Supplied by \code{rmarkdown::\link{output_format}}
+##' @param verbose Supplied by \code{rmarkdown::\link{output_format}}
+##' @return Used for its side effects
+##' @keywords internal
 post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 
   # Munge around to get the original file name
@@ -162,7 +180,8 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
   rendered_md <- input_file
   source_rmd  <- gsub("\\.utf8\\.md$", ".Rmd", input_file)
 
-  # Extact the doc's body and YAML front matter
+  # Extact the doc's body and YAML front matter -- much of this can probably be
+  # replaced with the metadata object
   yaml_vars <- rmarkdown::yaml_front_matter(source_rmd)
   body      <- partition_yaml_front_matter(readLines(source_rmd))$body
   doc_id    <- yaml_vars$googdown$doc_id
@@ -221,7 +240,20 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
   return(url_file)
 }
 
-#' @export
+##' Convert a Local Rmarkdown File to a remote Google Doc
+##'
+##' This function is intended to be used as an \code{rmarkdown} 'output format',
+##' e.g. \code{rmarkdown::render("myfile.Rmd", output_format =
+##' googdown::google_doc())}. You can also get the same result via
+##' \code{\link{gd_push}}.
+##'
+##' @param reference_odt The reference file to be used for styling. The default
+##'   (\code{NULL}) is to use a template with the same styling as a default
+##'   Google doc, though with slightly nicer figure captions.
+##' @param keep_md Should the intermediate markdown files be retained?
+##' @param clean_supporting Should other intermediate files be retained?
+##' @return If successful, the URL of a remote Google document
+##' @export
 google_doc <- function(reference_odt = NULL, keep_md = FALSE,
                        clean_supporting = FALSE) {
 
@@ -260,7 +292,9 @@ google_doc <- function(reference_odt = NULL, keep_md = FALSE,
 #'   Google doc at doc_version. Will be retrieved from the remote document if
 #'   NULL (the default)
 #' @return Nothing
-cache_version_files <- function(doc_id, source, rendered_md, cache_dir = getOption("gd.cache"),
+#' @keywords internal
+cache_version_files <- function(doc_id, source, rendered_md,
+                                cache_dir = getOption("gd.cache"),
                                 doc_revision = NULL, remote_ast = NULL) {
 
   cache_file <- function(file, new_name = NULL, version = TRUE) {
