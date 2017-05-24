@@ -29,7 +29,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   }
 
   # Get cache files in order --------------------------------------------------------
-  
+
   # And the previous local and remote versions, for comparison
   remote1_ast_path <- file_path(
     getOption("gd.cache"), doc_id, paste0(local_rev, "-remote.ast")
@@ -54,14 +54,14 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   # Fold the JSON of the ast files
   c(remote1_ast_path, remote2_ast_path, local1_ast_path, source1_ast_path) %>%
     mapply(fold_ast_json, ., .)
-  
+
   # Merging changes -----------------------------------------------------------------
 
   md_merged_ast     <- tempfile(fileext = ".ast")
   rmd_merged_ast    <- tempfile(fileext = ".ast")
   rmd_merged_body   <- tempfile(fileext = ".Rmd")
   final_merged_file <- tempfile(fileext = ".Rmd")
- 
+
   remote_diff_to_local(
     remote1     = remote1_ast_path,
     local1      = local1_ast_path,
@@ -87,9 +87,9 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
     final_merged_file
   )
 
-  
+
   # Test integrity of generated file ---------------------------------------------
-  
+
   # TO REMOVE IN THE FUTURE
   # Check that the markdown file which you 'unknit' to rmarkdown, produces a
   # file which knits back to the markdown used to produce it. If you see what I
@@ -109,18 +109,18 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
     catif("Merged Rmd file integrity checked: Successfully produces remote content")
   }
 
-  
+
   # Write out, end ---------------------------------------------------------------
 
   # Copy the new file to the original file path
   file.copy(final_merged_file, file_name, overwrite = TRUE)
-  
+
   # Versioning  / Caching
   cache_version_files(
     doc_id = doc_id, doc_revision = remote_rev, source = file_name,
     rendered_md = ast_to_md(md_merged_ast), remote_ast = remote2_ast_path
   )
-  
+
   catif("Remote changes merged in to ", file_name)
 }
 
@@ -139,7 +139,7 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
 
   gd_auth()
 
-  # Convert the file to commonmark standard
+  # Convert the file to 'standard' markdown
   standardize_rmd(file_name)
 
   # Extact the doc's body and YAML front matter
@@ -153,7 +153,9 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
   temp_dir <- tempdir()
 
   rendered_file  <- rmarkdown::render(
-    file_name, file_types()[[format]]$rmarkdown_writer(), clean = FALSE,
+    file_name,
+    file_types()[[format]]$rmarkdown_writer(reference_odt = "~/.pandoc/custom-reference.odt"),
+    clean = FALSE,
     output_dir = temp_dir
   )
 
@@ -195,6 +197,127 @@ gdoc_push <- function(file_name, format = defaultUploadFormat()) {
   cache_version_files(doc_id, source = file_name, rendered_md)
 
   return(invisible(TRUE))
+}
+
+
+
+pre_knit <- function(input) {
+
+  # Check auth
+  gd_auth()
+
+  # Convert the file to 'standard' markdown
+  standardize_rmd(input)
+
+  cat(paste("INPUT FILE IS", input))
+  cat("PRE KNIT HAPPENED")
+}
+
+
+post_processor <- function(metadata, input_file, output_file, clean, verbose) {
+
+  cat("POST KNIT STARTED\n")
+
+
+  cat(paste("INPUT FILE IS", input_file))
+
+  cat(paste("METADATA IS ", unlist(metadata)))
+
+  # Munge around to get the original file name
+  #
+  # This is actually really bad -- because you can't access the original
+  # filename from within this function, you're having to assemble it making some
+  # assumptions about how knitr handles it. The biggest / worst assumption here
+  # is that this is running in the same directory as the original file.
+  rendered_md <- input_file
+  source_rmd  <- gsub("\\.utf8\\.md$", ".Rmd", input_file)
+
+  # Extact the doc's body and YAML front matter
+  yaml_vars <- rmarkdown::yaml_front_matter(source_rmd)
+  body      <- partition_yaml_front_matter(readLines(source_rmd))$body
+  doc_id    <- yaml_vars$googdown$doc_id
+  doc_title <- yaml_vars$title
+
+
+  cat("YAML PART HAPPENED\n")
+  # Init -----------------------------------------------------------------------
+
+  # If it looks like the doc hasn't been uploaded before, init a new one and
+  # return it's id
+  if (is.null(doc_id)) {
+
+    # Init an empty doc
+    init_respb <- init_empty_doc(doc_title)
+
+    catif("No doc_id detected in YAML headers: New Google Doc created")
+
+    # Append the ID to the original file's YAML data
+    doc_id   <- init_respb$id
+    yaml_vars$googdown$doc_id <- paste0(doc_id)
+    yaml_vars <- paste0("---\n", yaml::as.yaml(yaml_vars), "---\n")
+
+    writeLines(c(yaml_vars, body), source_rmd)
+    catif("New doc_id added to source file's YAML headers")
+
+  } else {
+    # If you could blow comments out, warn the user
+    if (!doc_update_warning()) return(NULL)
+  }
+
+
+  cat("DOC INIT HAPPENED\n")
+
+  # Upload & cache -------------------------------------------------------------
+
+  # Update / add content to the remote file
+  up_respb <- gd_update(output_file, doc_id)
+
+  catif("Google document content successfully updated")
+
+  # This is just for debugging, and should be removed without consequence
+  cat(paste(list.files(), collapse = "\n"))
+
+  # Versioning  / Caching
+  cache_version_files(doc_id, source = source_rmd, rendered_md)
+
+
+
+  # Return something -----------------------------------------------------------
+
+  # Return a file path to a '.url' file (I had no idea this was a thing;
+  # shamelessly stolen from ropensiclabs' godc pakcage)
+
+  url      <- paste0("https://docs.google.com/document/d/", doc_id, "/edit")
+  url_file <- paste0(tools::file_path_sans_ext(source_rmd), ".url")
+
+  writeLines(
+    paste0("[InternetShortcut]\nURL=", url, "\n"), url_file
+  )
+
+  return(url_file)
+}
+
+
+google_doc <- function(reference_odt = NULL) {
+
+  # If no reference doc, use the package default
+  if (is.null(reference_odt)) {
+    reference_odt <- system.file("custom-reference.odt", package = "googdown")
+  } else {
+    if (!file_exists(reference_odt)) stop(reference_odt, " does not exist")
+  }
+
+  # Return an Rmarkdown output format
+  rmarkdown::output_format(
+    knitr            = rmarkdown::knitr_options(),
+    pandoc           = rmarkdown::pandoc_options(to = "odt"),
+    keep_md          = FALSE,
+    clean_supporting = TRUE,
+    post_processor   = post_processor,
+    pre_knit         = pre_knit,
+    base_format      = rmarkdown::odt_document(reference_odt = reference_odt)
+  )
+
 }
 
 
@@ -282,7 +405,7 @@ cache_version_files <- function(doc_id, source, rendered_md, cache_dir = getOpti
 
   # Save the AST of the remote file
   if (is.null(remote_ast)) {
-    remote_ast <- download_ast(doc_id) 
+    remote_ast <- download_ast(doc_id)
   }
 
   # Save the Rmd of the original file
@@ -316,7 +439,7 @@ revision_list_from_local_metadata <- function(
   dir.create(
     file_path(cache_dir, doc_id), recursive = TRUE, showWarnings = FALSE
   )
-  
+
   revisions_file <- file_path(cache_dir, doc_id, "revisions.json")
 
   # Download if asked to (or if the file doesn't exist yet)
