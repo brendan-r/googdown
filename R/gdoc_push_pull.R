@@ -209,19 +209,10 @@ pre_knit <- function(input) {
   # Convert the file to 'standard' markdown
   standardize_rmd(input)
 
-  cat(paste("INPUT FILE IS", input))
-  cat("PRE KNIT HAPPENED")
 }
 
 
 post_processor <- function(metadata, input_file, output_file, clean, verbose) {
-
-  cat("POST KNIT STARTED\n")
-
-
-  cat(paste("INPUT FILE IS", input_file))
-
-  cat(paste("METADATA IS ", unlist(metadata)))
 
   # Munge around to get the original file name
   #
@@ -239,7 +230,6 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
   doc_title <- yaml_vars$title
 
 
-  cat("YAML PART HAPPENED\n")
   # Init -----------------------------------------------------------------------
 
   # If it looks like the doc hasn't been uploaded before, init a new one and
@@ -265,17 +255,12 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
   }
 
 
-  cat("DOC INIT HAPPENED\n")
-
   # Upload & cache -------------------------------------------------------------
 
   # Update / add content to the remote file
   up_respb <- gd_update(output_file, doc_id)
 
   catif("Google document content successfully updated")
-
-  # This is just for debugging, and should be removed without consequence
-  cat(paste(list.files(), collapse = "\n"))
 
   # Versioning  / Caching
   cache_version_files(doc_id, source = source_rmd, rendered_md)
@@ -297,7 +282,7 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
   return(url_file)
 }
 
-
+#' @export
 google_doc <- function(reference_odt = NULL) {
 
   # If no reference doc, use the package default
