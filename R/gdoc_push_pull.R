@@ -354,7 +354,8 @@ cache_version_files <- function(doc_id, source, rendered_md, cache_dir = getOpti
   cache_run_status()
 }
 
-#' @export
+
+#' @keywords internal
 revision_list_from_local_metadata <- function(
   doc_id, cache_dir = getOption("gd.cache"), update = FALSE
   ) {
@@ -377,7 +378,7 @@ revision_list_from_local_metadata <- function(
   jsonlite::fromJSON(brocks::read_txt(revisions_file))
 }
 
-#' @export
+#' @keywords internal
 latest_revision_from_local_metadata <- function(...) {
   max(as.numeric(unlist(revision_list_from_local_metadata(...)$items$id)))
 }
