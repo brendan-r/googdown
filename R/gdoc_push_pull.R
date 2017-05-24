@@ -240,6 +240,9 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
   return(url_file)
 }
 
+
+
+
 ##' Convert a Local Rmarkdown File to a remote Google Doc
 ##'
 ##' This function is intended to be used as an \code{rmarkdown} 'output format',
@@ -266,7 +269,7 @@ google_doc <- function(reference_odt = NULL, keep_md = FALSE,
 
   # Return an Rmarkdown output format
   rmarkdown::output_format(
-    knitr            = rmarkdown::knitr_options(),
+    knitr            = rmarkdown::knitr_options(opts_chunk = getOption("gd.opts_chunk")),
     pandoc           = rmarkdown::pandoc_options(to = "odt"),
     keep_md          = FALSE,
     clean_supporting = TRUE,
