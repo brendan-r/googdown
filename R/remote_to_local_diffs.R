@@ -8,7 +8,7 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
   # Diff the two remote files, extract the lines which have changed
   # Before you do the diff, remove all commas at the end of lines, as these
   # mean that adding an item to an object changes the object above
-  
+
   remote_diff <- diff_list(remote1, remote2, ignore_trailing_commas = TRUE)
 
   # Determine if any of the diffs concern areas of the AST which can't
@@ -82,43 +82,86 @@ unknit_new_md <- function(
   # *meaningfully* be propagated back to the local markdown source's AST. All
   # additions *should* (?) be fine
   #
-  # For changes / subtractions -- if any positive digit isn't in `map`, remove it
+  # For changes / subtractions -- if any positive digit isn't in `map`, remove
+  # it
 
-  filtered_diff <- md_changes_diff %>%
-    lapply(function(x) {
-      # If there's nothing to remove, then you're fine
-      if (any(is.na(x$file1_remove))) return(x)
-      # The lines which are flagged as changeable from the mapping between
-      # remote1 and local1
-      changeable_lines <- map$file1[!is.na(map$file2)]
-      # The lines in remote1 which we hope to change
-      lines_to_be_changed <- x$file1_remove
+  # You should probably do away with all of this: Deletions will appear as both
+  # changes and deletions, and additions aren't problematic.
+  ## filtered_diff <- md_changes_diff %>%
+  ##   lapply(function(x) {
+  ##     # If there's nothing to remove, then you're fine
+  ##     if (any(is.na(x$file1_remove))) return(x)
+  ##     # The lines which are flagged as changeable from the mapping between
+  ##     # remote1 and local1
+  ##     changeable_lines <- map$file1[!is.na(map$file2)]
+  ##     # The lines in remote1 which we hope to change
+  ##     lines_to_be_changed <- x$file1_remove
 
-      if (all(lines_to_be_changed %in% changeable_lines)) x else NULL
-    }) %>%
-    Filter(Negate(is.null), .)
+  ##     if (all(lines_to_be_changed %in% changeable_lines)) x else NULL
+  ##   }) %>%
+  ##   Filter(Negate(is.null), .)
 
 
-  # Alter the diff object, so that the lines from new_md_ast are changed to their
-  # equivalents in original_rmd_ast
-  map_ind <- function(x) {
-    if (any(is.na(x))) return(NA)
-    map$file2[x]
+  ## if (length(filtered_diff) < 1L) {
+  ##   stop("After filtering to lines which can be changed, no diffs to make!")
+  ## }
+
+  filtered_diff <- md_changes_diff
+
+  ## # Alter the diff object, so that the lines from new_md_ast are changed to their
+  ## # equivalents in original_rmd_ast
+  ## map_ind <- function(x) {
+  ##   if (any(is.na(x))) return(NA)
+  ##   map$file2[x]
+  ## }
+
+  # A version of the above, which should substitute NAs for equivalent lines in
+  # the source code
+  map_ind2 <- function(lines_to_change) {
+    mapped_lines_to_change <- vector()
+
+    # Go through each line in file 1
+    for (i in 1:length(lines_to_change)) {
+      # The line-number of the line in question, in the first / markdown file
+      # (also the row number of map)
+      l <- lines_to_change[i]
+
+      if (!is.na(map$file2[l])) {
+        # If there's no NA, then it should be a straight mapping
+        mapped_lines_to_change <- c(mapped_lines_to_change, map$file2[l])
+      } else {
+
+        # Otherwise, interpolate between known editable lines
+        # The previous non-NA line
+        last_non_na <- max(na.omit(map$file2[1:(l-1)]))     + 1
+        # The next non-NA line
+        next_non_na <- min(na.omit(map$file2[l:nrow(map)])) - 1
+
+        # Interpolate the lines of source code that would be affected, and add
+        # them to the lines to edit
+        mapped_lines_to_change <- c(
+          mapped_lines_to_change, last_non_na:next_non_na
+        )
+      }
+    }
+
+    mapped_lines_to_change
   }
+
 
   # The line numbers for the remote1 - remote2 diff, but with remote1's line
   # numbers replaced with the equivalents (where available) from local1
   offset_diff <- filtered_diff %>%
     lapply(function(x){
-      x$file1_at     <- map_ind(x$file1_at)
-      x$file1_remove <- map_ind(x$file1_remove)
+      x$file1_at     <- map_ind2(x$file1_at)
+      x$file1_remove <- map_ind2(x$file1_remove)
       x
     })
 
   # Apply the offset diff object (containing the diffs between the old and new
   # markdown asts, and apply it to the source rmarkdown ast. Don't convert to
   # markdown at this stage
-  patch(original_rmd_ast, new_md_ast, offset_diff, output_file) 
+  patch(original_rmd_ast, new_md_ast, offset_diff, output_file)
 }
 
 
