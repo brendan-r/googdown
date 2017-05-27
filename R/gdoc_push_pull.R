@@ -45,7 +45,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
 
   # Download the new file -----------------------------------------------------------
 
-  # If there are differences, pull the remote ast in to the cache
+  # If there are differences, pull the remote AST into the cache
   remote2_ast_path <- tempfile(fileext = ".ast")
 
   gd_download(doc_id, remote2_ast_path, output_format = "json")
@@ -62,6 +62,8 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   rmd_merged_body   <- tempfile(fileext = ".Rmd")
   final_merged_file <- tempfile(fileext = ".Rmd")
 
+  catif("Attempting to merge remote and local markdown files")
+
   remote_diff_to_local(
     remote1     = remote1_ast_path,
     local1      = local1_ast_path,
@@ -69,17 +71,44 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
     output_file = md_merged_ast
   )
 
+  catif("Remote and local markdown files successfully merged")
+
+  catif("Attempting to fold the AST of the newly merged markdown file")
+
   fold_ast_json(md_merged_ast, md_merged_ast)
 
-  unknit_new_md(
-    original_rmd_ast = source1_ast_path,
-    original_md_ast = local1_ast_path,
-    new_md_ast = md_merged_ast,
-    output_file = rmd_merged_ast
+  catif("Markdown AST successfully folded")
+
+  catif("Attempting to 'unknit' merged local markdown ast")
+
+  # Attempt the unknitting part
+  unknit_attempt <- try(
+    silent = TRUE,
+    unknit_new_md(
+      original_rmd_ast = source1_ast_path,
+      original_md_ast = local1_ast_path,
+      new_md_ast = md_merged_ast,
+      output_file = rmd_merged_ast
+    )
   )
+
+  if ("try-error" %in% class(unknit_attempt)) {
+    message("DID NOT WORK: UNKNITTING FAILED")
+    return(list(
+      original_rmd_ast = source1_ast_path,
+      original_md_ast = local1_ast_path,
+      new_md_ast = md_merged_ast,
+      output_file = rmd_merged_ast
+    ))
+  }
+
+  catif("Markdown AST successfully unknit to Rmd AST")
+  catif("Attempting to convert the Rmd AST to Rmd")
 
   # Convert the AST back to Rmarkdown
   ast_to_rmd(rmd_merged_ast, rmd_merged_body)
+
+  catif("Success!")
 
   # Add the YAML back on
   writeLines(
