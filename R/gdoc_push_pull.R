@@ -64,12 +64,26 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
 
   catif("Attempting to merge remote and local markdown files")
 
-  remote_diff_to_local(
-    remote1     = remote1_ast_path,
-    local1      = local1_ast_path,
-    remote2     = remote2_ast_path,
-    output_file = md_merged_ast
+  # Attempt merging remote and local markdown files
+  markdown_merge_attempt <- try(
+    silent = TRUE,
+    remote_diff_to_local(
+      remote1     = remote1_ast_path,
+      local1      = local1_ast_path,
+      remote2     = remote2_ast_path,
+      output_file = md_merged_ast
+    )
   )
+
+  if ("try-error" %in% class(markdown_merge_attempt)) {
+    message("DID NOT WORK: LOCAL-REMOTE MARKDOWN MERGE FAILED")
+    return(list(
+      remote1     = remote1_ast_path,
+      local1      = local1_ast_path,
+      remote2     = remote2_ast_path,
+      output_file = md_merged_ast
+    ))
+  }
 
   catif("Remote and local markdown files successfully merged")
 
