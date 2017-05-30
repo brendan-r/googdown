@@ -41,6 +41,9 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
 
   map_ind2 <- function(lines_to_change) {
+
+    if (any(is.na(lines_to_change))) return(NA)
+
     mapped_lines_to_change <- vector()
 
     # Go through each line in file 1
@@ -151,6 +154,9 @@ unknit_new_md <- function(original_rmd_ast, original_md_ast, new_md_ast,
   # A version of the above, which should substitute NAs for equivalent lines in
   # the source code
   map_ind2 <- function(lines_to_change) {
+
+    if (any(is.na(lines_to_change))) return(NA)
+
     mapped_lines_to_change <- vector()
 
     # Go through each line in file 1
