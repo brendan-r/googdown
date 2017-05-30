@@ -89,7 +89,22 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
 
   catif("Attempting to fold the AST of the newly merged markdown file")
 
-  fold_ast_json(md_merged_ast, md_merged_ast)
+
+  fold_markdown_ast_attempt <- try(
+    silent = TRUE,
+    fold_ast_json(md_merged_ast, md_merged_ast)
+  )
+
+  if ("try-error" %in% class(fold_markdown_ast_attempt)) {
+    message("DID NOT WORK: MARKDOWN AST FOLDING FAILED")
+    return(list(
+      remote1     = remote1_ast_path,
+      local1      = local1_ast_path,
+      remote2     = remote2_ast_path,
+      output_file = md_merged_ast
+    ))
+  }
+
 
   catif("Markdown AST successfully folded")
 
