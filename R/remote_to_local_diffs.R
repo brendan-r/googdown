@@ -17,20 +17,20 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
   #
   # For changes / subtractions -- if any positive digit isn't in `map`, remove it
 
-  filtered_diff <- remote_diff %>%
-    lapply(function(x) {
-      # If there's nothing to remove, then you're fine
-      if (any(is.na(x$file1_remove))) return(x)
-      # The lines which are flagged as changeable from the mapping between
-      # remote1 and local1
-      changeable_lines <- map$file1[!is.na(map$file2)]
-      # The lines in remote1 which we hope to change
-      lines_to_be_changed <- x$file1_remove
+  ## filtered_diff <- remote_diff %>%
+  ##   lapply(function(x) {
+  ##     # If there's nothing to remove, then you're fine
+  ##     if (any(is.na(x$file1_remove))) return(x)
+  ##     # The lines which are flagged as changeable from the mapping between
+  ##     # remote1 and local1
+  ##     changeable_lines <- map$file1[!is.na(map$file2)]
+  ##     # The lines in remote1 which we hope to change
+  ##     lines_to_be_changed <- x$file1_remove
 
-      if (all(lines_to_be_changed %in% changeable_lines)) x else NULL
-    }) %>%
-    Filter(Negate(is.null), .)
+  ##     if (all(lines_to_be_changed %in% changeable_lines)) x else NULL }) %>%
+  ## Filter(Negate(is.null), .)
 
+  filtered_diff <- remote_diff
 
   # Alter the diff object, so that the lines from remote1 are changed to their
   # equivalents in local1
@@ -39,12 +39,45 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
     map$file2[x]
   }
 
+
+  map_ind2 <- function(lines_to_change) {
+    mapped_lines_to_change <- vector()
+
+    # Go through each line in file 1
+    for (i in 1:length(lines_to_change)) {
+      # The line-number of the line in question, in the first / markdown file
+      # (also the row number of map)
+      l <- lines_to_change[i]
+
+      if (!is.na(map$file2[l])) {
+        # If there's no NA, then it should be a straight mapping
+        mapped_lines_to_change <- c(mapped_lines_to_change, map$file2[l])
+      } else {
+
+        # Otherwise, interpolate between known editable lines
+        # The previous non-NA line
+        last_non_na <- max(na.omit(map$file2[1:(l-1)]))     + 1
+        # The next non-NA line
+        next_non_na <- min(na.omit(map$file2[l:nrow(map)])) - 1
+
+        # Interpolate the lines of source code that would be affected, and add
+        # them to the lines to edit
+        mapped_lines_to_change <- c(
+          mapped_lines_to_change, last_non_na:next_non_na
+        )
+      }
+    }
+
+    mapped_lines_to_change
+  }
+
+
   # The line numbers for the remote1 - remote2 diff, but with remote1's line
   # numbers replaced with the equivalents (where available) from local1
   offset_diff <- filtered_diff %>%
     lapply(function(x){
-      x$file1_at     <- map_ind(x$file1_at)
-      x$file1_remove <- map_ind(x$file1_remove)
+      x$file1_at     <- map_ind2(x$file1_at)
+      x$file1_remove <- map_ind2(x$file1_remove)
       x
     })
 
@@ -66,8 +99,8 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
 
 #' @export
-unknit_new_md <- function(
-  original_rmd_ast, original_md_ast, new_md_ast, output_file = "_unknit.ast" ) {
+unknit_new_md <- function(original_rmd_ast, original_md_ast, new_md_ast,
+                          output_file = "_unknit.ast") {
 
   # For each line in the original markdown file, which lines have a
   # corresponding line in the Rmarkdown file?
