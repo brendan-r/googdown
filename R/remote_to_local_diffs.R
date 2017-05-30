@@ -79,7 +79,7 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
   # numbers replaced with the equivalents (where available) from local1
   offset_diff <- filtered_diff %>%
     lapply(function(x){
-      x$file1_at     <- map_ind2(x$file1_at)
+      x$file1_at     <- max(map_ind2(x$file1_at))
       x$file1_remove <- map_ind2(x$file1_remove)
       x
     })
@@ -192,7 +192,7 @@ unknit_new_md <- function(original_rmd_ast, original_md_ast, new_md_ast,
   # numbers replaced with the equivalents (where available) from local1
   offset_diff <- filtered_diff %>%
     lapply(function(x){
-      x$file1_at     <- map_ind2(x$file1_at)
+      x$file1_at     <- max(map_ind2(x$file1_at))
       x$file1_remove <- map_ind2(x$file1_remove)
       x
     })
