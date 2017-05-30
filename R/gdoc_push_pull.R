@@ -28,7 +28,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
     return(invisible(TRUE))
   }
 
-  # Get cache files in order --------------------------------------------------------
+  # Get cache files in order ---------------------------------------------------
 
   # And the previous local and remote versions, for comparison
   remote1_ast_path <- file_path(
@@ -43,7 +43,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
     getOption("gd.cache"), doc_id, paste0(local_rev, "-source.ast")
   )
 
-  # Download the new file -----------------------------------------------------------
+  # Download the new file ------------------------------------------------------
 
   # If there are differences, pull the remote AST into the cache
   remote2_ast_path <- tempfile(fileext = ".ast")
@@ -55,7 +55,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   c(remote1_ast_path, remote2_ast_path, local1_ast_path, source1_ast_path) %>%
     mapply(fold_ast_json, ., .)
 
-  # Merging changes -----------------------------------------------------------------
+  # Merging changes ------------------------------------------------------------
 
   md_merged_ast     <- tempfile(fileext = ".ast")
   rmd_merged_ast    <- tempfile(fileext = ".ast")
@@ -131,7 +131,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   )
 
 
-  # Write out, end ---------------------------------------------------------------
+  # Write out, end -------------------------------------------------------------
 
   # Copy the new file to the original file path
   file.copy(final_merged_file, file_name, overwrite = TRUE)
@@ -290,7 +290,9 @@ google_doc <- function(reference_odt = NULL, keep_md = FALSE,
 
   # Return an Rmarkdown output format
   rmarkdown::output_format(
-    knitr            = rmarkdown::knitr_options(opts_chunk = getOption("gd.opts_chunk")),
+    knitr            = rmarkdown::knitr_options(
+      opts_chunk = getOption("gd.opts_chunk")
+    ),
     pandoc           = rmarkdown::pandoc_options(to = "odt"),
     keep_md          = FALSE,
     clean_supporting = TRUE,
@@ -340,7 +342,8 @@ cache_version_files <- function(doc_id, source, rendered_md,
       file_path(doc_dir, use_name)
     }
 
-    # Prefix the filename with the version number, and add to the cache directory
+    # Prefix the filename with the version number, and add to the cache
+    # directory
     file.copy(file, out_file, overwrite = TRUE)
   }
 
