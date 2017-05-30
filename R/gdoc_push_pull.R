@@ -131,28 +131,6 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
   )
 
 
-  # Test integrity of generated file ---------------------------------------------
-
-  # TO REMOVE IN THE FUTURE
-  # Check that the markdown file which you 'unknit' to rmarkdown, produces a
-  # file which knits back to the markdown used to produce it. If you see what I
-  # mean.
-  # md merged as 'hard breaks'
-  # whereas knitted_md has 'soft breaks'
-  # Some pandoc setting somewhere needs to be made the same between the two
-  knitted_md_ast <- rmarkdown::render(
-    final_merged_file, rmarkdown::md_document(), clean = FALSE,
-    output_dir = tempdir()
-  ) %>%
-    md_to_ast()
-
-  if (!brocks::read_txt(knitted_md_ast) == brocks::read_txt(md_merged_ast)) {
-    warning("The Rmarkdown document produced doesn't produce the file that created it. Probably nbd")
-  } else {
-    catif("Merged Rmd file integrity checked: Successfully produces remote content")
-  }
-
-
   # Write out, end ---------------------------------------------------------------
 
   # Copy the new file to the original file path
