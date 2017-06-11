@@ -1,6 +1,38 @@
-# Conversion between types ------------------------------------------------
+# For ODT / MS Word files ------------------------------------------------------
 
-# For markdown -------------------------------------------
+odt_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
+
+  tf <- tempfile(fileext=".md")
+
+  # Convert to Markdown to to drop unusable metadata
+  system(paste0(
+    "pandoc -f odt -t markdown -o ", tf, " ", file
+  ))
+
+  # Convert markdown to AST
+  md_to_ast(tf, new_file)
+
+}
+
+
+docx_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
+
+  tf <- tempfile(fileext=".md")
+
+  # Convert to Markdown to to drop unusable metadata
+  system(paste0(
+    "pandoc -f docx -t markdown -o ", tf, " ", file
+  ))
+
+  # Convert markdown to AST
+  md_to_ast(tf, new_file)
+
+}
+
+
+
+# For markdown -----------------------------------------------------------------
+
 ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
   system(paste0(
     "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
@@ -36,7 +68,10 @@ rmd_to_rmd <- function(file, new_file = tempfile(fileext = ".md")) {
   ast_to_rmd(rmd_to_ast(file), new_file)
 }
 
-# For Rmarkdown ---------------------------------------------
+
+
+# For Rmarkdown ----------------------------------------------------------------
+
 ast_to_rmd <- function(file, new_file = tempfile(fileext = ".Rmd")) {
 
   # Take the pandoc markdown output, and change the pandoc fenced code block
