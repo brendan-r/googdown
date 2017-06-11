@@ -11,7 +11,7 @@ fix_json <- function(string) {
   # - commas
 
   original_string <- string
-  
+
   # If you have any curly or square braces back to back without a comma, fix it
   string <- gsub("\\}[[:space:]]*\\{", "},{", string)
   string <- gsub("\\][[:space:]]*\\[", "],[", string)
@@ -24,16 +24,29 @@ fix_json <- function(string) {
   string <- gsub("\\][[:space:]]*,[[:space:]]*\\]", "]]", string)
   string <- gsub("\\][[:space:]]*,[[:space:]]*\\}", "]}", string)
   string <- gsub("\\}[[:space:]]*,[[:space:]]*\\]", "}]", string)
-    
+
   if (any(original_string != string)) {
     catif("Un-breaking the JSON caused during diffing\n")
   }
-  
+
   string
+}
+
+
+# This function detects if a JSON node is an inline math block. For some reason
+# these seem to break everything, so should be treated as a single ct pair for
+# the purposes of code folding
+is_inline_math <- function(x) {
+  types <- unlist(x)[grepl("t", names(unlist(x)))]
+  all(types %in% c("Math", "InlineMath"))
 }
 
 one_ct_pair <- function(x) {
   if ("unMeta" %in% names(x))
+    return(TRUE)
+
+  # Inline math contains more than one ct pair, but we want to fold it anyway
+  if (is_inline_math(x))
     return(TRUE)
 
   if (depth(x) < 2)
@@ -53,7 +66,7 @@ one_ct_pair <- function(x) {
     names(x)[2] == "c"
 }
 
-# This goes to the loest level of ct pairs
+# This goes to the lowest level of ct pairs
 wrap_ct <- function(x) {
   if (one_ct_pair(x)) {
     if (depth(x) < 1) return(x) else return(to_json(x))
@@ -62,9 +75,10 @@ wrap_ct <- function(x) {
   }
 }
 
+# A function to determine if a JSON entry is a pandoc para containing text of
+# some sort (e.g., we want to split it into lines)
 selectively_split <- function(json) {
-  # A function to determine if a JSON entry is a pandoc para containing text of
-  # some sort (e.g., we want to split it into lines)
+
   is_text_para <- function(x) {
     if (!"t" %in% names(x)) {
       return(FALSE)
@@ -146,7 +160,7 @@ fold_ast_json <- function(file_in, file_out) {
 
   # And lose all the confusing escapted quotes
   lines <- gsub('\\\\"', '"', lines)
-  # If 
+  # If
   lines <- gsub('\\\\\\"', '"', lines)
 
   if (!jsonlite::validate(lines)) {
