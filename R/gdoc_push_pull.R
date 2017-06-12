@@ -286,7 +286,7 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 ##' googdown::google_doc())}. You can also get the same result via
 ##' \code{\link{gd_push}}.
 ##'
-##' @param reference_odt The reference file to be used for styling. The default
+##' @param reference_file The reference file to be used for styling. The default
 ##'   (\code{NULL}) is to use a template with the same styling as a default
 ##'   Google doc, though with slightly nicer figure captions.
 ##' @param keep_md Should the intermediate markdown files be retained?
