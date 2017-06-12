@@ -53,37 +53,6 @@ gd_auth <- function(client_id, client_secret, cache = "~/.googdown_token") {
 }
 
 
-#' Upload a file to Google Docs
-#'
-#' @param file_name The name of the local file which you'd like to upload
-#' @param format The conversion format you'd like to use to upload it
-#'
-#' @return The httr response
-#' @export
-gd_upload <- function(
-  file_name, format = defaultUploadFormat()
-) {
-
-  library(rmarkdown)
-
-  temp_dir <- tempdir()
-
-  local_file  <- rmarkdown::render(
-    file_name, file_types()[[format]]$rmarkdown_writer(), clean = TRUE,
-    output_dir = temp_dir
-  )
-
-  req <- httr::POST(
-    "https://www.googleapis.com/upload/drive/v2/files?convert=true",
-    httr::config(token = getOption("gd.token")),
-    body = httr::upload_file(local_file)
-  )
-
-  # Throw an error if there was one
-  httr::stop_for_status(req)
-  httr::content(req)
-}
-
 gd_revisions_ls <- function(doc_id) {
   req <- httr::GET(
     paste0(
