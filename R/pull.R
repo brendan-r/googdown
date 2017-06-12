@@ -4,7 +4,7 @@
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gd_pull <- function(file_name, format = defaultUploadFormat()) {
+gd_pull <- function(file_name, format = getOption("gd.upload_format")) {
   gd_auth()
 
   # Convert the file to commonmark standard

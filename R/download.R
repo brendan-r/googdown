@@ -91,7 +91,7 @@ gd_file_resource <- function(doc_id) {
 #' @return The httr response
 #' @export
 gd_export <- function(
-  file_id, file_name, export_format = defaultDownloadFormat(),
+  file_id, file_name, export_format = getOption("gd.download_format"),
   revision = NA
 ) {
 
@@ -139,7 +139,7 @@ gd_export <- function(
 ##' @return If successful, \code{file_name}
 gd_download <- function(doc_id,
                         file_name = tempfile(),
-                        export_format = defaultDownloadFormat(),
+                        export_format = getOption("gd.download_format"),
                         output_format = "markdown",
                         revision = NA) {
 

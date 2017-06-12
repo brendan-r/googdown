@@ -9,9 +9,12 @@
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gdoc_push <- function(file_name, format = defaultUploadFormat(),
-                      reference_odt = NULL) {
-  rmarkdown::render(file_name, output_format = google_doc(reference_odt))
+gdoc_push <- function(file_name, upload_format = getOption("gd.upload_format"),
+                      reference_file = NULL) {
+  rmarkdown::render(
+    file_name,
+    output_format = google_doc(reference_file, upload_format)
+  )
 }
 
 
@@ -132,9 +135,9 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 ##' @return If successful, the URL of a remote Google document
 ##' @export
 google_doc <- function(reference_file = NULL,
+                       upload_format = getOption("gd.upload_format"),
                        keep_md = FALSE,
-                       clean_supporting = FALSE,
-                       upload_format = defaultUploadFormat()) {
+                       clean_supporting = FALSE) {
 
   # Check that you can work with the format
   if (!upload_format %in% c("ms_word_doc", "open_office_doc")) {
