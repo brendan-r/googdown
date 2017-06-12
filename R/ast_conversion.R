@@ -1,32 +1,51 @@
 # For ODT / MS Word files ------------------------------------------------------
 
-odt_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
+odt_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
 
-  tf <- tempfile(fileext=".md")
-
-  # Convert to Markdown to to drop unusable metadata
   system(paste0(
-    "pandoc -f odt -t markdown -o ", tf, " ", file
+    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
+    " -f odt -t markdown -o ", new_file
   ))
 
+  new_file
+
+}
+
+
+docx_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
+
+  system(paste0(
+    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
+    " -f docx -t markdown -o ", new_file
+  ))
+
+  new_file
+
+}
+
+
+odt_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
+
+  # Convert to Markdown to to drop unusable metadata
+  temp <- odt_to_(file)
+
   # Convert markdown to AST
-  md_to_ast(tf, new_file)
+  md_to_ast(temp, new_file)
+
+  new_file
 
 }
 
 
 docx_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
 
-  tf <- tempfile(fileext=".md")
-
   # Convert to Markdown to to drop unusable metadata
-  system(paste0(
-    "pandoc -f docx -t markdown -o ", tf, " ", file
-  ))
+  temp <- docs_to_(file)
 
   # Convert markdown to AST
-  md_to_ast(tf, new_file)
+  md_to_ast(temp, new_file)
 
+  new_file
 }
 
 
