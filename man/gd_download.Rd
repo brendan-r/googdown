@@ -5,8 +5,8 @@
 \title{Download a Google Document as Markdown or JSON}
 \usage{
 gd_download(doc_id, file_name = tempfile(),
-  export_format = defaultDownloadFormat(), output_format = "markdown",
-  revision = NA)
+  export_format = getOption("gd.download_format"),
+  output_format = "markdown", revision = NA)
 }
 \arguments{
 \item{doc_id}{The ID of the Google document}

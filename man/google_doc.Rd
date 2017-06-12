@@ -4,8 +4,9 @@
 \alias{google_doc}
 \title{Convert a Local Rmarkdown File to a remote Google Doc}
 \usage{
-google_doc(reference_file = NULL, keep_md = FALSE,
-  clean_supporting = FALSE, upload_format = defaultUploadFormat())
+google_doc(reference_file = NULL,
+  upload_format = getOption("gd.upload_format"), keep_md = FALSE,
+  clean_supporting = FALSE)
 }
 \arguments{
 \item{reference_file}{The reference file to be used for styling. The default

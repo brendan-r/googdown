@@ -4,7 +4,7 @@
 \alias{gd_export}
 \title{Download an A Google Doc as an Open Office or MS Word Document}
 \usage{
-gd_export(file_id, file_name, format = defaultDownloadFormat(),
+gd_export(file_id, file_name, export_format = getOption("gd.download_format"),
   revision = NA)
 }
 \arguments{

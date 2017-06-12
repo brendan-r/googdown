@@ -4,7 +4,7 @@
 \alias{gd_pull}
 \title{Pull remote changes to a Google Doc to the source Rmarkdown file}
 \usage{
-gd_pull(file_name, format = defaultUploadFormat())
+gd_pull(file_name, format = getOption("gd.upload_format"))
 }
 \arguments{
 \item{file}{The path to the Rmarkdown file which you'd like to update}

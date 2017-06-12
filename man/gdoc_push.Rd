@@ -4,7 +4,8 @@
 \alias{gdoc_push}
 \title{Push an Rmarkdown document to Google Docs}
 \usage{
-gdoc_push(file_name, format = defaultUploadFormat(), reference_odt = NULL)
+gdoc_push(file_name, upload_format = getOption("gd.upload_format"),
+  reference_file = NULL)
 }
 \arguments{
 \item{file_name}{The file path of the Rmarkdown source code}
