@@ -5,7 +5,7 @@
     gd.cache           = "./.googdown",
     gd.verbose         = TRUE,
     gd.download_format = "ms_word_doc",
-    gd.upload_format   = "open_office_doc",
+    gd.upload_format   = "ms_word_doc",
     gd.wrap            = "none",
     gd.opts_chunk      = list(
       dpi        = 600,
