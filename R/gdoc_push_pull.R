@@ -171,8 +171,9 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gdoc_push <- function(file_name, format = defaultUploadFormat()) {
-  rmarkdown::render(file_name, output_format = google_doc())
+gdoc_push <- function(file_name, format = defaultUploadFormat(),
+                      reference_odt = NULL) {
+  rmarkdown::render(file_name, output_format = google_doc(reference_odt))
 }
 
 ##' googdown pre-knit hook
