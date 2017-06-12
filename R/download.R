@@ -91,36 +91,34 @@ gd_file_resource <- function(doc_id) {
 #' @return The httr response
 #' @export
 gd_export <- function(
-  file_id, file_name, format = defaultDownloadFormat(),
+  file_id, file_name, export_format = defaultDownloadFormat(),
   revision = NA
 ) {
 
   # Check that you can work with the format
-  if (!format %in% c("ms_word_doc", "open_office_doc")) {
-    stop("Currently, format must be 'ms_word_doc' or 'open_office_doc'")
+  if (!export_format %in% c("ms_word_doc", "open_office_doc")) {
+    stop("export_format must be 'ms_word_doc' or 'open_office_doc'")
   }
-
-  temp_file <- tempfile()
 
   if (is.na(revision)) {
     req <- httr::GET(
       paste0(
         "https://www.googleapis.com/drive/v2/files/",
         file_id,
-        "/export?mimeType=", file_types()[[format]]$mime_type
+        "/export?mimeType=", file_types()[[export_format]]$mime_type
       ),
       httr::config(token = getOption("gd.token")),
-      httr::write_disk(temp_file, TRUE)
+      httr::write_disk(file_name, TRUE)
     )
   } else {
     req <- httr::GET(
       paste0(
         "https://docs.google.com/feeds/download/documents/export/Export?id=",
         doc_id, "&revision=", remote_rev, "exportFormat=",
-        file_types()[[format]]$pandoc_type
+        file_types()[[export_format]]$pandoc_type
       ),
       httr::config(token = getOption("gd.token")),
-      httr::write_disk(temp_file, TRUE)
+      httr::write_disk(file_name, TRUE)
     )
   }
 
@@ -158,29 +156,29 @@ gd_download <- function(doc_id,
   tf <- tempfile()
 
   # 'Export the file from Google docs'
-  gd_export(doc_id, tf, format, revision)
+  gd_export(doc_id, tf, export_format, revision)
 
   # Convert --------------------------------------------------------------------
 
   # Convert to markdown
   if (output_format == "markdown") {
 
-    if (format == "open_office_doc") {
+    if (export_format == "open_office_doc") {
       return(odt_to_md(tf, file_name))
     }
 
-    if (format == "ms_word_doc") {
+    if (export_format == "ms_word_doc") {
       return(docx_to_md(tf, file_name))
     }
 
   # Convert to json / AST
   } else if (output_format == "json") {
 
-    if (format == "open_office_doc") {
+    if (export_format == "open_office_doc") {
       return(odt_to_ast(tf, file_name))
     }
 
-    if (format == "ms_word_doc") {
+    if (export_format == "ms_word_doc") {
       return(docx_to_ast(tf, file_name))
     }
   }
