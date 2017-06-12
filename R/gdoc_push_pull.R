@@ -167,7 +167,7 @@ gd_pull <- function(file_name, format = defaultUploadFormat()) {
 
 #' Push an Rmarkdown document to Google Docs
 #'
-#' @param file_name The filepath of the Rmarkdown source code
+#' @param file_name The file path of the Rmarkdown source code
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
@@ -181,7 +181,7 @@ gdoc_push <- function(file_name, format = defaultUploadFormat(),
 ##' It simply checks google auths, and then 'standardizes' the Rmarkdown file,
 ##' using \code{\link{standardize_rmd}}
 ##'
-##' @param input
+##' @param input The file path of the Rmarkdown source code
 ##' @return Used for its side effects
 ##' @keywords internal
 pre_knit <- function(input) {
