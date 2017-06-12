@@ -27,7 +27,7 @@ docx_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
 odt_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
 
   # Convert to Markdown to to drop unusable metadata
-  temp <- odt_to_(file)
+  temp <- odt_to_md(file)
 
   # Convert markdown to AST
   md_to_ast(temp, new_file)
@@ -40,7 +40,7 @@ odt_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
 docx_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
 
   # Convert to Markdown to to drop unusable metadata
-  temp <- docs_to_(file)
+  temp <- docx_to_md(file)
 
   # Convert markdown to AST
   md_to_ast(temp, new_file)
