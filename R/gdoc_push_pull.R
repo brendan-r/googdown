@@ -301,7 +301,7 @@ google_doc <- function(reference_odt = NULL, keep_md = FALSE,
   if (is.null(reference_odt)) {
     reference_odt <- system.file("custom-reference.odt", package = "googdown")
   } else {
-    if (!file_exists(reference_odt)) stop(reference_odt, " does not exist")
+    if (!file.exists(reference_odt)) stop(reference_odt, " does not exist")
   }
 
   # Return an Rmarkdown output format
@@ -406,7 +406,7 @@ cache_version_files <- function(doc_id, source, rendered_md,
 
   # Save the AST of the remote file
   if (is.null(remote_ast)) {
-    remote_ast <- download_ast(doc_id)
+    remote_ast <- gd_download(doc_id, output_format = "json")
   }
 
   # Save the Rmd of the original file
