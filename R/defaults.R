@@ -1,3 +1,0 @@
-defaultWrapBehavior <- function() {
-  "none"
-}

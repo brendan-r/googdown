@@ -3,7 +3,7 @@
 odt_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
 
   system(paste0(
-    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
+    "pandoc --atx-headers --wrap=", getOption("gd.wrap"), " ", file,
     " -f odt -t markdown -o ", new_file
   ))
 
@@ -15,7 +15,7 @@ odt_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
 docx_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
 
   system(paste0(
-    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
+    "pandoc --atx-headers --wrap=", getOption("gd.wrap"), " ", file,
     " -f docx -t markdown -o ", new_file
   ))
 
@@ -54,7 +54,7 @@ docx_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
 
 ast_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
   system(paste0(
-    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
+    "pandoc --atx-headers --wrap=", getOption("gd.wrap"), " ", file,
     " -f json -t markdown -o ", new_file
   ))
 
@@ -75,7 +75,7 @@ md_to_ast <- function(file, new_file = tempfile(fileext = ".ast")) {
 # 'standardize' the markdown conventions used
 md_to_md <- function(file, new_file = tempfile(fileext = ".md")) {
   system(paste0(
-    "pandoc --atx-headers --wrap=", defaultWrapBehavior(), " ", file,
+    "pandoc --atx-headers --wrap=", getOption("gd.wrap"), " ", file,
     " -f markdown -t markdown -o ", new_file
   ))
 
@@ -142,5 +142,5 @@ standardize_rmd <- function(file) {
 
   # Log something for the user
   catif(file, " converted to standard pandoc markdown (with --wrap=",
-        defaultWrapBehavior(), ")")
+        getOption("gd.wrap"), ")")
 }
