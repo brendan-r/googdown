@@ -113,18 +113,23 @@ gd_file_resource <- function(doc_id) {
 }
 
 
-#' Download an A Google Doc as Markdown
+#' Download an A Google Doc as an Open Office or MS Word Document
 #'
 #' @param file_id The Google Doc ID of the document you'd like to download
-#' @param file_name The local file you'd like the Markdown data stored in
-#' @param format The conversion format you'd like to use
+#' @param file_name The local file you'd like to export to
+#' @param format The export format you'd like to use
 #'
 #' @return The httr response
 #' @export
-gd_download <- function(
+gd_export <- function(
   file_id, file_name, format = defaultDownloadFormat(),
-  revision = NA, output_format = "commonmark"
+  revision = NA
 ) {
+
+  # Check that you can work with the format
+  if (!format %in% c("ms_word_doc", "open_office_doc")) {
+    stop("Currently, format must be 'ms_word_doc' or 'open_office_doc'")
+  }
 
   temp_file <- tempfile()
 
@@ -153,43 +158,66 @@ gd_download <- function(
   # Throw an error if there was one
   httr::stop_for_status(req)
 
-  system(paste0(
-    "pandoc ", temp_file, " -f ", file_types()[[format]]$pandoc_type,
-    " -t ", output_format, " -o ", file_name
-  ))
-
-  return(invisible(TRUE))
+  return(req)
 }
 
+##' Download a Google Document as Markdown or JSON
+##'
+##' A small wrapper function for \code{\link{gd_export}}, which converts the
+##' exported file to markdown or JSON using pandoc
+##' @param doc_id The ID of the Google document
+##' @param file_name File path to download to
+##' @param export_format The format the document is exported from google using
+##' @param output_format The format for the final outputted file
+##' @return If successful, \code{file_name}
+gd_download <- function(doc_id,
+                        file_name = tempfile(),
+                        export_format = defaultDownloadFormat(),
+                        output_format = "markdown",
+                        revision = NA) {
 
-# Note: This only gets called once, you can and probably should use gd_download
-# instead, and kill this off to reduce the amount of code that you're
-# maintaining.
-download_ast <- function(doc_id, format = defaultDownloadFormat()) {
+  # Check that you can work with the export format
+  if (!export_format %in% c("open_office_doc", "ms_word_doc")) {
+    stop("export_format must be one of 'open_office_doc' or 'ms_word_doc'")
+  }
 
-  google_output <- tempfile(fileext = file_types()[[format]]$file_ext)
-  ast_output    <- tempfile(fileext = ".ast")
+  # Same for the output format
+  if (!output_format %in% c("markdown", "json")) {
+    stop("output_format must be one of 'json' or 'markdown'")
+  }
 
-  req <- httr::GET(
-    paste0(
-      "https://www.googleapis.com/drive/v2/files/",
-      doc_id,
-      "/export?mimeType=", file_types()[[format]]$mime_type
-    ),
-    httr::config(token = getOption("gd.token")),
-    httr::write_disk(google_output, TRUE)
-  )
+  tf <- tempfile()
 
-  # If there was an error, throw one
-  httr::stop_for_status(req)
+  # 'Export the file from Google docs'
+  gd_export(doc_id, tf, format, revision)
 
-  system(paste(
-    "pandoc", google_output, "-f", file_types()[[format]]$pandoc_type,
-    "-t json -o", ast_output
-  ))
+  # Convert --------------------------------------------------------------------
 
-  ast_output
+  # Convert to markdown
+  if (output_format == "markdown") {
+
+    if (format == "open_office_doc") {
+      return(odt_to_md(tf, file_name))
+    }
+
+    if (format == "ms_word_doc") {
+      return(docx_to_md(tf, file_name))
+    }
+
+  # Convert to json / AST
+  } else if (output_format == "json") {
+
+    if (format == "open_office_doc") {
+      return(odt_to_ast(tf, file_name))
+    }
+
+    if (format == "ms_word_doc") {
+      return(docx_to_ast(tf, file_name))
+    }
+  }
+
 }
+
 
 file_types <- function() {
   list(

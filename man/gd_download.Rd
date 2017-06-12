@@ -2,22 +2,26 @@
 % Please edit documentation in R/upload_download.R
 \name{gd_download}
 \alias{gd_download}
-\title{Download an A Google Doc as Markdown}
+\title{Download a Google Document as Markdown or JSON}
 \usage{
-gd_download(file_id, file_name, format = defaultDownloadFormat(),
-  revision = NA, output_format = "commonmark")
+gd_download(doc_id, file_name = tempfile(),
+  export_format = defaultDownloadFormat(), output_format = "markdown",
+  revision = NA)
 }
 \arguments{
-\item{file_id}{The Google Doc ID of the document you'd like to download}
+\item{doc_id}{The ID of the Google document}
 
-\item{file_name}{The local file you'd like the Markdown data stored in}
+\item{file_name}{File path to download to}
 
-\item{format}{The conversion format you'd like to use}
+\item{export_format}{The format the document is exported from google using}
+
+\item{output_format}{The format for the final outputted file}
 }
 \value{
-The httr response
+If successful, \code{file_name}
 }
 \description{
-Download an A Google Doc as Markdown
+A small wrapper function for \code{\link{gd_export}}, which converts the
+exported file to markdown or JSON using pandoc
 }
 
