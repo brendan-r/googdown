@@ -176,6 +176,7 @@ gdoc_push <- function(file_name, format = defaultUploadFormat(),
   rmarkdown::render(file_name, output_format = google_doc(reference_odt))
 }
 
+
 ##' googdown pre-knit hook
 ##'
 ##' It simply checks google auths, and then 'standardizes' the Rmarkdown file,
@@ -278,8 +279,6 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 }
 
 
-
-
 ##' Convert a Local Rmarkdown File to a remote Google Doc
 ##'
 ##' This function is intended to be used as an \code{rmarkdown} 'output format',
@@ -294,7 +293,28 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 ##' @param clean_supporting Should other intermediate files be retained?
 ##' @return If successful, the URL of a remote Google document
 ##' @export
-google_doc <- function(reference_odt = NULL, keep_md = FALSE,
+google_doc <- function(reference_file = NULL,
+                       keep_md = FALSE,
+                       clean_supporting = FALSE,
+                       upload_format = defaultUploadFormat()) {
+
+  # Check that you can work with the format
+  if (!upload_format %in% c("ms_word_doc", "open_office_doc")) {
+    stop("upload_format must be 'ms_word_doc' or 'open_office_doc'")
+  }
+
+  # Do the thing
+  if (upload_format == "open_office_doc") {
+    google_doc_odt(reference_file, keep_md, clean_supporting)
+  } else if (upload_format == "ms_word_doc") {
+    google_doc_docx(reference_file, keep_md, clean_supporting)
+  }
+
+}
+
+
+#' @keywords internal
+google_doc_odt <- function(reference_odt = NULL, keep_md = FALSE,
                        clean_supporting = FALSE) {
 
   # If no reference doc, use the package default
@@ -315,6 +335,33 @@ google_doc <- function(reference_odt = NULL, keep_md = FALSE,
     post_processor   = post_processor,
     pre_knit         = pre_knit,
     base_format      = rmarkdown::odt_document(reference_odt = reference_odt)
+  )
+
+}
+
+
+#' @keywords internal
+google_doc_docx <- function(reference_docx = NULL, keep_md = FALSE,
+                            clean_supporting = FALSE) {
+
+  # If no reference doc, use the package default
+  if (is.null(reference_docx)) {
+    reference_docx <- system.file("custom-reference.docx", package = "googdown")
+  } else {
+    if (!file.exists(reference_docx)) stop(reference_docx, " does not exist")
+  }
+
+  # Return an Rmarkdown output format
+  rmarkdown::output_format(
+    knitr            = rmarkdown::knitr_options(
+      opts_chunk = getOption("gd.opts_chunk")
+    ),
+    pandoc           = rmarkdown::pandoc_options(to = "docx"),
+    keep_md          = FALSE,
+    clean_supporting = TRUE,
+    post_processor   = post_processor,
+    pre_knit         = pre_knit,
+    base_format      = rmarkdown::word_document()
   )
 
 }
