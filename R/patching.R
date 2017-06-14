@@ -11,9 +11,7 @@ patch <- function(file1, file2, difflist, patched_file) {
     writeLines(patched_file)
 
   # Run it through pandoc once more, just to tidy up the AST
-  system(paste(
-    "pandoc", patched_file, "-f json -t json -o", patched_file
-  ))
+  ast_to_ast(patched_file)
 }
 
 #' @export
