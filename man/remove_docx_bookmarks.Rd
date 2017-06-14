@@ -20,4 +20,9 @@ linking to or navigating documents. Pandoc adds Bookmark References to all
 with big blue ugly ribbons by the side of each header. This function strips
 them out of a given input file.
 }
+\details{
+MS Word files are zipped XML. The file is unzipped, and a regular expression
+is used to parse and remove the offending bookmarks from the XML. Then
+everything is zipped back together again.
+}
 
