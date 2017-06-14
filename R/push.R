@@ -202,7 +202,7 @@ google_doc_docx <- function(reference_docx = NULL, keep_md = FALSE,
     clean_supporting = TRUE,
     post_processor   = post_processor,
     pre_knit         = pre_knit,
-    base_format      = rmarkdown::word_document()
+    base_format      = rmarkdown::word_document(reference_docx = reference_docx)
   )
 
 }
