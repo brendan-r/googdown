@@ -9,7 +9,7 @@
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gdoc_push <- function(file_name, upload_format = getOption("gd.upload_format"),
+gd_push <- function(file_name, upload_format = getOption("gd.upload_format"),
                       reference_file = NULL) {
   rmarkdown::render(
     file_name,
