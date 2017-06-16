@@ -5,6 +5,10 @@
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
 gd_pull <- function(file_name, format = getOption("gd.upload_format")) {
+
+  # For magirttr / R CMD CHECK
+  . <- NULL
+
   gd_auth()
 
   # Convert the file to commonmark standard

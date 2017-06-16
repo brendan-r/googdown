@@ -79,6 +79,9 @@ diff_list <- function(file1, file2, ignore_trailing_commas = FALSE) {
 #' @export
 map_lines <- function(file1, file2, ...) {
 
+  # For magirttr / R CMD CHECK
+  . <- NULL
+
   n_1_lines <- length(readLines(file1))
   n_2_lines <- length(readLines(file2))
 

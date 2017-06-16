@@ -1,5 +1,9 @@
 #' @export
 knitr_block_to_pandoc_fenced <- function(lines) {
+
+  # For magirttr / R CMD CHECK
+  . <- NULL
+
   # Fail out if the special characters which you're using to sub for quotes are
   # in the string
   if (any(grepl("§", lines))) {
@@ -57,6 +61,10 @@ knitr_block_to_pandoc_fenced <- function(lines) {
 
 #' @export
 pandoc_fenced_to_knitr_block <- function(lines) {
+
+  # For magirttr / R CMD CHECK
+  . <- NULL
+
   # Pandoc folds down any line breaks in the code to the lolstring
   # "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n". This function replaces that with \r\n,
   # which should for some intents and purposes evaluate to \n
