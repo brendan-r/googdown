@@ -169,7 +169,7 @@ gd_pull <- function(file_name, format = getOption("gd.upload_format")) {
 #' @param cache_dir The dir used for caching
 #' @param doc_revision Optional. Google's version number for the remote
 #'   doc. Will be determined with a call to
-#'   \code{\link{latest_revision_from_local_metadata}} if NULL (the default)
+#'   \code{latest_revision_from_local_metadata} if NULL (the default)
 #' @param remote_ast Optional. The filepath to the Pandoc AST of the remote
 #'   Google doc at doc_version. Will be retrieved from the remote document if
 #'   NULL (the default)

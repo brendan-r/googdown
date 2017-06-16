@@ -20,7 +20,7 @@ run}
 
 \item{doc_revision}{Optional. Google's version number for the remote
 doc. Will be determined with a call to
-\code{\link{latest_revision_from_local_metadata}} if NULL (the default)}
+\code{latest_revision_from_local_metadata} if NULL (the default)}
 
 \item{remote_ast}{Optional. The filepath to the Pandoc AST of the remote
 Google doc at doc_version. Will be retrieved from the remote document if

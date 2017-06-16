@@ -84,7 +84,7 @@ gd_file_resource <- function(doc_id) {
 
 #' Download an A Google Doc as an Open Office or MS Word Document
 #'
-#' @param file_id The Google Doc ID of the document you'd like to download
+#' @param doc_id The Google Doc ID of the document you'd like to download
 #' @param file_name The local file you'd like to export to
 #' @param format The export format you'd like to use
 #'
@@ -104,7 +104,7 @@ gd_export <- function(
     req <- httr::GET(
       paste0(
         "https://www.googleapis.com/drive/v2/files/",
-        file_id,
+        doc_id,
         "/export?mimeType=", file_types()[[export_format]]$mime_type
       ),
       httr::config(token = getOption("gd.token")),

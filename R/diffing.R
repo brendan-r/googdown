@@ -1,6 +1,9 @@
 #' @export
 diff_list <- function(file1, file2, ignore_trailing_commas = FALSE) {
 
+  # For magirttr / R CMD CHECK
+  . <- NULL
+
   # The number after the letter -- you begin the change on the line below that
   # Note: This is vectorized, but it doesn't really need to be
   normal_diff_to_lines <- function(diff_text) {

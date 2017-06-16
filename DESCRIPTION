@@ -27,8 +27,7 @@ Imports:
     magrittr
 Suggests:
     testthat,
-    knitr,
-    rmarkdown
+    knitr
 VignetteBuilder: knitr
 Encoding: UTF-8
 LazyData: true

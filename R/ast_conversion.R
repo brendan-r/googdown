@@ -174,7 +174,11 @@ ast_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 
 }
 
-# Convert a file to commonmark, using system pandoc
+
+##' Convert a file to commonmark, using system pandoc
+##'
+##' @param input_file The file you'd like to conver
+##' @return Used for its side effects
 standardize_rmd <- function(input_file) {
   # Extact the yaml header, in order to reattach it later (not preserved)
   partitioned_doc <- partition_yaml_front_matter(readLines(input_file))
