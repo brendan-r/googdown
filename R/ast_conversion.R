@@ -7,7 +7,7 @@ pandoc_options <- function() {
 }
 
 
-odt_to_md <- function(input_file, new_file = tempfile(fileext = ".md")) {
+odt_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
 
   rmarkdown::pandoc_convert(
     input   = input_file,
