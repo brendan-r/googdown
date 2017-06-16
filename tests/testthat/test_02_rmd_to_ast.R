@@ -17,7 +17,7 @@ test_that("Rmarkdown (no code) <--> AST", {
     md_file <- ast_to_md(ast_file)
 
     # Is it the same?
-    expect_equal(brocks::read_txt(f), brocks::read_txt(md_file))
+    expect_equal(read_txt(f), read_txt(md_file))
   }
 })
 
@@ -35,6 +35,6 @@ test_that("Rmarkdown (with code) <--> AST", {
     rmd_file <- ast_to_rmd(ast_file)
 
     # Is it the same?
-    expect_equal(brocks::read_txt(f), brocks::read_txt(rmd_file))
+    expect_equal(read_txt(f), read_txt(rmd_file))
   }
 })

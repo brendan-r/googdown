@@ -17,6 +17,6 @@ test_that("You can convert some markdown files to AST, and back again", {
     md_file <- ast_to_md(ast_file)
 
     # Is it the same?
-    expect_equal(brocks::read_txt(f), brocks::read_txt(md_file))
+    expect_equal(read_txt(f), read_txt(md_file))
   }
 })

@@ -215,7 +215,7 @@ cache_version_files <- function(doc_id, source, rendered_md,
     }
 
     # openssl has it's own classes, which are tricky to coerce
-    source_hash <- openssl::md5(brocks::read_txt(source))
+    source_hash <- openssl::md5(read_txt(source))
     class(source_hash) <- "character"
 
 
@@ -292,7 +292,7 @@ revision_list_from_local_metadata <- function(
     )
   }
 
-  jsonlite::fromJSON(brocks::read_txt(revisions_file))
+  jsonlite::fromJSON(read_txt(revisions_file))
 }
 
 #' @keywords internal

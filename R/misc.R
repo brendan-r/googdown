@@ -67,9 +67,9 @@ add_to_renviron <- function(x) {
 ##   ) {
 ##     txt <- paste(..., collapse = " ")
 ##     width <- max(getOption("width"), nchar(txt))
-    
+
 ##     cat(paste0(
-##       "\r", txt, 
+##       "\r", txt,
 ##       paste(rep(" ", max(0, width - nchar(txt) - 1)), collapse = "")
 ##     ))
 ##   }
@@ -77,4 +77,17 @@ add_to_renviron <- function(x) {
 
 catif <- function(...) {
   cat(paste(..., "\n", collapse = " "))
+}
+
+
+read_txt <- function (file, print = FALSE) {
+
+  cat_if <- if (print)
+        function(x) {
+            cat(x)
+            invisible(x)
+        }
+
+    else function(x) x
+    cat_if(paste0(readLines(file), collapse = "\n"))
 }

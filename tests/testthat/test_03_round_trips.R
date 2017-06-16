@@ -32,8 +32,8 @@ test_that("Very simple file works", {
   # make a file which has what you expect in it --- it won't always be the same
   # as the remote (re: source code, etc. etc.)
   expect_equal(
-    brocks::read_txt(googdown:::ast_to_md("output.ast")),
-    brocks::read_txt(googdown:::ast_to_md("remote2.ast"))
+    read_txt(googdown:::ast_to_md("output.ast")),
+    read_txt(googdown:::ast_to_md("remote2.ast"))
   )
 
   # Pop back out to the right dir
@@ -64,8 +64,8 @@ test_that("Remote md to local md", {
   fold_ast_json("output.ast", "output.ast")
 
   expect_equal(
-    brocks::read_txt(googdown:::ast_to_md("output.ast")),
-    brocks::read_txt("expected_output.md")
+    read_txt(googdown:::ast_to_md("output.ast")),
+    read_txt("expected_output.md")
   )
 
   # Tidy up
@@ -107,8 +107,8 @@ test_that("Remote md to local Rmd", {
   )
 
   expect_equal(
-    brocks::read_txt(googdown:::ast_to_rmd("unknitted.ast")),
-    brocks::read_txt("expected_output.Rmd")
+    read_txt(googdown:::ast_to_rmd("unknitted.ast")),
+    read_txt("expected_output.Rmd")
   )
 
   # Tidy up

@@ -94,7 +94,7 @@ md_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
   )
 
   output_file %>%
-    brocks::read_txt() %>%
+    read_txt() %>%
     jsonlite::prettify() %>%
     writeLines(output_file)
 
