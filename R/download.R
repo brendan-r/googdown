@@ -91,7 +91,7 @@ gd_file_resource <- function(doc_id) {
 #' @return The httr response
 #' @export
 gd_export <- function(
-  file_id, file_name, export_format = getOption("gd.download_format"),
+  doc_id, file_name, export_format = getOption("gd.download_format"),
   revision = NA
 ) {
 
@@ -114,7 +114,7 @@ gd_export <- function(
     req <- httr::GET(
       paste0(
         "https://docs.google.com/feeds/download/documents/export/Export?id=",
-        doc_id, "&revision=", remote_rev, "exportFormat=",
+        doc_id, "&revision=", revision, "exportFormat=",
         file_types()[[export_format]]$pandoc_type
       ),
       httr::config(token = getOption("gd.token")),

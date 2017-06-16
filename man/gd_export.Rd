@@ -4,13 +4,13 @@
 \alias{gd_export}
 \title{Download an A Google Doc as an Open Office or MS Word Document}
 \usage{
-gd_export(file_id, file_name, export_format = getOption("gd.download_format"),
+gd_export(doc_id, file_name, export_format = getOption("gd.download_format"),
   revision = NA)
 }
 \arguments{
-\item{file_id}{The Google Doc ID of the document you'd like to download}
-
 \item{file_name}{The local file you'd like to export to}
+
+\item{file_id}{The Google Doc ID of the document you'd like to download}
 
 \item{format}{The export format you'd like to use}
 }
