@@ -1,3 +1,5 @@
+#' @importFrom magrittr %>%
+
 # Check if the YAML front-matter in a document contains valid fields (only)
 validateYaml <- function(file) {
 

@@ -23,6 +23,7 @@ Imports:
     jsonlite,
     utils,
     stats
+    magrittr
 Suggests:
     testthat,
     knitr,
