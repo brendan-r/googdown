@@ -22,7 +22,8 @@ Imports:
     brocks,
     jsonlite,
     utils,
-    stats
+    stats,
+    yaml,
     magrittr
 Suggests:
     testthat,

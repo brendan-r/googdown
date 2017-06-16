@@ -59,9 +59,9 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
         # Otherwise, interpolate between known editable lines
         # The previous non-NA line
-        last_non_na <- max(na.omit(map$file2[1:(l-1)]))     + 1
+        last_non_na <- max(stats::na.omit(map$file2[1:(l-1)]))     + 1
         # The next non-NA line
-        next_non_na <- min(na.omit(map$file2[l:nrow(map)])) - 1
+        next_non_na <- min(stats::na.omit(map$file2[l:nrow(map)])) - 1
 
         # Interpolate the lines of source code that would be affected, and add
         # them to the lines to edit
@@ -172,9 +172,9 @@ unknit_new_md <- function(original_rmd_ast, original_md_ast, new_md_ast,
 
         # Otherwise, interpolate between known editable lines
         # The previous non-NA line
-        last_non_na <- max(na.omit(map$file2[1:(l-1)]))     + 1
+        last_non_na <- max(stats::na.omit(map$file2[1:(l-1)]))     + 1
         # The next non-NA line
-        next_non_na <- min(na.omit(map$file2[l:nrow(map)])) - 1
+        next_non_na <- min(stats::na.omit(map$file2[l:nrow(map)])) - 1
 
         # Interpolate the lines of source code that would be affected, and add
         # them to the lines to edit

@@ -22,7 +22,7 @@ doc_update_warning <- function() {
     "Please make a selection:"
   ))
 
-  response <- menu(c(
+  response <- utils::menu(c(
     "I understand, proceed with document update",
     "Do not proceed",
     "I understand, proceed, and stop showing me this message"

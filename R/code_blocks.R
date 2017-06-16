@@ -79,8 +79,8 @@ pandoc_fenced_to_knitr_block <- function(lines) {
 
     # Look for a word starting with #
     name <- stringr::str_extract(l, "#[[:alnum:][:punct:]]*") %>%
-      gsub("#", "", .) %>%
-    na.omit()
+    gsub("#", "", .) %>%
+    stats::na.omit()
 
     # A regular expression to replace all spaces in a string which are not
     # between quotes (http://stackoverflow.com/a/9584469)

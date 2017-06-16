@@ -211,7 +211,7 @@ cache_version_files <- function(doc_id, source, rendered_md,
     if (!file.exists(run_status_file)) {
       csv <- data.frame()
     } else {
-      csv <- read.csv(run_status_file, stringsAsFactors = FALSE)
+      csv <- utils::read.csv(run_status_file, stringsAsFactors = FALSE)
     }
 
     # openssl has it's own classes, which are tricky to coerce
@@ -229,7 +229,7 @@ cache_version_files <- function(doc_id, source, rendered_md,
     )
 
     # Append the latest run information, and write out the file
-    write.csv(row.names = FALSE, rbind(csv, run_info), run_status_file)
+    utils::write.csv(row.names = FALSE, rbind(csv, run_info), run_status_file)
 
     return(invisible(TRUE))
   }
