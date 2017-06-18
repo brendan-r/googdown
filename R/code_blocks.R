@@ -23,7 +23,7 @@ knitr_block_to_pandoc_fenced <- function(lines, sub_char = "\u550") {
 
     param_list <- l %>%
       gsub("```[[:space:]]*\\{r,?[[:space:]]*|\\}", "", .) %>%
-      knitr:::parse_params()
+      parse_params()
 
     # Extract & remove the chunk name, if there is one
     name <- param_list$label
@@ -113,7 +113,7 @@ pandoc_fenced_to_knitr_block <- function(lines, sub_char = "\u550") {
     params       <- gsub('"', '',  params)
     params       <- gsub(sub_char, '"', params)
 
-    # If params == "" replace with NULL to prevent hanging commas
+    # If params == "" replace wit/xh NULL to prevent hanging commas
     params <- subset(params, params != "")
 
     param_string <- paste0(c(name, params), collapse = ", ")
