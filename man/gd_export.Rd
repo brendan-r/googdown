@@ -8,11 +8,14 @@ gd_export(doc_id, file_name, export_format = getOption("gd.download_format"),
   revision = NA)
 }
 \arguments{
-\item{doc_id}{The Google Doc ID of the document you'd like to download}
+\item{doc_id}{The ID of the Google document}
 
-\item{file_name}{The local file you'd like to export to}
+\item{file_name}{File path to download to}
 
-\item{format}{The export format you'd like to use}
+\item{export_format}{The format the document is exported from google using}
+
+\item{revision}{The revision id which you'd like to download the document
+at. A value of \code{NA} (the default) downloads the latest version}
 }
 \value{
 The httr response

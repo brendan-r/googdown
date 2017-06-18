@@ -8,7 +8,14 @@ gd_push(file_name, upload_format = getOption("gd.upload_format"),
   reference_file = NULL)
 }
 \arguments{
-\item{file_name}{The file path of the Rmarkdown source code}
+\item{file_name}{An Rmarkdown file}
+
+\item{upload_format}{The format the Rmarkdown document should be converted
+to, prior to upload}
+
+\item{reference_file}{The reference file to be used for styling. The default
+(\code{NULL}) is to use a template with the same styling as a default
+Google doc, though with slightly nicer figure captions.}
 }
 \value{
 \code{TRUE} (invisibly) if successfull, otherwise, an error.

@@ -16,6 +16,9 @@ gd_download(doc_id, file_name = tempfile(),
 \item{export_format}{The format the document is exported from google using}
 
 \item{output_format}{The format for the final outputted file}
+
+\item{revision}{The revision id which you'd like to download the document
+at. A value of \code{NA} (the default) downloads the latest version}
 }
 \value{
 If successful, \code{file_name}

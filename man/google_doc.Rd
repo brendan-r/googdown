@@ -13,6 +13,9 @@ google_doc(reference_file = NULL,
 (\code{NULL}) is to use a template with the same styling as a default
 Google doc, though with slightly nicer figure captions.}
 
+\item{upload_format}{The format the Rmarkdown document should be converted
+to, prior to upload}
+
 \item{keep_md}{Should the intermediate markdown files be retained?}
 
 \item{clean_supporting}{Should other intermediate files be retained?}

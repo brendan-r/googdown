@@ -1,10 +1,10 @@
 #' Pull remote changes to a Google Doc to the source Rmarkdown file
 #'
-#' @param file The path to the Rmarkdown file which you'd like to update
+#' @param file_name The path to the Rmarkdown file which you'd like to update
 #'
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gd_pull <- function(file_name, format = getOption("gd.upload_format")) {
+gd_pull <- function(file_name) {
 
   # For magirttr / R CMD CHECK
   . <- NULL

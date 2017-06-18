@@ -84,11 +84,8 @@ gd_file_resource <- function(doc_id) {
 
 #' Download an A Google Doc as an Open Office or MS Word Document
 #'
-#' @param doc_id The Google Doc ID of the document you'd like to download
-#' @param file_name The local file you'd like to export to
-#' @param format The export format you'd like to use
-#'
 #' @return The httr response
+#' @inheritParams gd_download
 #' @export
 gd_export <- function(
   doc_id, file_name, export_format = getOption("gd.download_format"),
@@ -136,6 +133,8 @@ gd_export <- function(
 ##' @param file_name File path to download to
 ##' @param export_format The format the document is exported from google using
 ##' @param output_format The format for the final outputted file
+##' @param revision The revision id which you'd like to download the document
+##'   at. A value of \code{NA} (the default) downloads the latest version
 ##' @return If successful, \code{file_name}
 gd_download <- function(doc_id,
                         file_name = tempfile(),

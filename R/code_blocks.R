@@ -1,4 +1,4 @@
-#' @export
+#' @keywords internal
 knitr_block_to_pandoc_fenced <- function(lines) {
 
   # For magirttr / R CMD CHECK
@@ -59,7 +59,7 @@ knitr_block_to_pandoc_fenced <- function(lines) {
 
 
 
-#' @export
+#' @keywords internal
 pandoc_fenced_to_knitr_block <- function(lines) {
 
   # For magirttr / R CMD CHECK

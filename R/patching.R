@@ -1,4 +1,4 @@
-#' @export
+#' @keywords internal
 patch <- function(file1, file2, difflist, patched_file) {
 
   patch_strings(file1, file2, difflist) %>%
@@ -14,7 +14,7 @@ patch <- function(file1, file2, difflist, patched_file) {
   ast_to_ast(patched_file)
 }
 
-#' @export
+#' @keywords internal
 patch_strings <- function(file1, file2, difflist) {
   l1 <- readLines(file1)
   l2 <- readLines(file2)

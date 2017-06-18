@@ -1,13 +1,8 @@
-# Push / Render ----------------------------------------------------------------
-# Notes: This *should probably* end up as an rmarkdown output_format (which is
-# what jenny/noam did in gdoc). However, it's easiest to be lazy for the time
-# being
-
 #' Push an Rmarkdown document to Google Docs
 #'
-#' @param file_name The file path of the Rmarkdown source code
-#'
+#' @param file_name An Rmarkdown file
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
+#' @inheritParams google_doc
 #' @export
 gd_push <- function(file_name, upload_format = getOption("gd.upload_format"),
                       reference_file = NULL) {
@@ -130,6 +125,8 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 ##' @param reference_file The reference file to be used for styling. The default
 ##'   (\code{NULL}) is to use a template with the same styling as a default
 ##'   Google doc, though with slightly nicer figure captions.
+##' @param upload_format The format the Rmarkdown document should be converted
+##'   to, prior to upload
 ##' @param keep_md Should the intermediate markdown files be retained?
 ##' @param clean_supporting Should other intermediate files be retained?
 ##' @return If successful, the URL of a remote Google document

@@ -1,4 +1,4 @@
-#' @export
+#' @keywords internal
 diff_list <- function(file1, file2, ignore_trailing_commas = FALSE) {
 
   # For magirttr / R CMD CHECK
@@ -76,7 +76,7 @@ diff_list <- function(file1, file2, ignore_trailing_commas = FALSE) {
 # the markdown source (without also bringing in changes which are peculiar to
 # the remote format, such as metadata ending up in the body (e.g. the document
 # title, author, etc.), image locations changing, and so on).
-#' @export
+#' @keywords internal
 map_lines <- function(file1, file2, ...) {
 
   # For magirttr / R CMD CHECK

@@ -1,6 +1,6 @@
 # Note: Currently the is.na statements in the below are throwing warnings, but
 # the behavior is as desired. Possibly worth wrapping in a suppressWarnings call
-#' @export
+#' @keywords internal
 remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
   map <- map_lines(remote1, local1)
@@ -101,7 +101,7 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 # over (it would be helpful if you threw a warning).
 
 
-#' @export
+#' @keywords internal
 unknit_new_md <- function(original_rmd_ast, original_md_ast, new_md_ast,
                           output_file = "_unknit.ast") {
 
