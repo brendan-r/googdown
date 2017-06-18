@@ -93,11 +93,11 @@ map_lines <- function(file1, file2, ...) {
 
   # These are lines in remote_file which do not appear in local_file
   new_lines <- line_numbers %>%
-    lapply(function(x) x$file1_remove) %>% unlist %>% stats::na.omit
+    lapply(function(x) x$file1_remove) %>% unlist %>% stats::na.omit()
 
   # These are lines in file2, which have been changed in file1
   changed_lines <- line_numbers %>%
-    lapply(function(x) x$file2_add) %>% unlist %>% stats::na.omit
+    lapply(function(x) x$file2_add) %>% unlist %>% stats::na.omit()
 
   # The lines from file2 which we want to map to file1 -- all the lines, less
   # the changed ones
