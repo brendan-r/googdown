@@ -13,6 +13,7 @@ appveyor.yml
 .client_id
 .client_secret
 README.md
+README_staging.md
 TODO.md
 USAGE.md
 ^\.boxr-oauth
