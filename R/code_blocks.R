@@ -1,13 +1,13 @@
 #' @keywords internal
-knitr_block_to_pandoc_fenced <- function(lines) {
+knitr_block_to_pandoc_fenced <- function(lines, sub_char = "\u550") {
 
   # For magirttr / R CMD CHECK
   . <- NULL
 
   # Fail out if the special characters which you're using to sub for quotes are
   # in the string
-  if (any(grepl("§", lines))) {
-    stop("Can't used the ascii character § in knitr blocks: Currently ",
+  if (any(grepl(sub_char, lines))) {
+    stop("Can't used the ascii character ", sub_char, " in knitr blocks: Currently ",
          "used internally by knitr_block_to_pandoc_fenced")
   }
 
@@ -31,7 +31,7 @@ knitr_block_to_pandoc_fenced <- function(lines) {
 
     # For the remaining params, if they're strings, double quote them
     param_list <- param_list %>% lapply(
-      function(x) if(!is.character(x)) x else paste0('"§', x, '§"')
+      function(x) if(!is.character(x)) x else paste0('"', sub_char, x, sub_char, '"')
     )
 
     # Put the param list back into a vector of arg=val strings (if there are
@@ -60,7 +60,7 @@ knitr_block_to_pandoc_fenced <- function(lines) {
 
 
 #' @keywords internal
-pandoc_fenced_to_knitr_block <- function(lines) {
+pandoc_fenced_to_knitr_block <- function(lines, sub_char = "\u550") {
 
   # For magirttr / R CMD CHECK
   . <- NULL
@@ -111,7 +111,7 @@ pandoc_fenced_to_knitr_block <- function(lines) {
     # symbols § in `knitr_block_to_pandoc_fenced`. Here, remove all existing
     # double quotes, and replace § with new double quotes
     params       <- gsub('"', '',  params)
-    params       <- gsub('§', '"', params)
+    params       <- gsub(sub_char, '"', params)
 
     # If params == "" replace with NULL to prevent hanging commas
     params <- subset(params, params != "")
