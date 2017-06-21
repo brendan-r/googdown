@@ -65,17 +65,6 @@ pandoc_fenced_to_knitr_block <- function(lines, sub_char = "\u550") {
   # For magirttr / R CMD CHECK
   . <- NULL
 
-  # Pandoc folds down any line breaks in the code to the lolstring
-  # "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n". This function replaces that with \r\n,
-  # which should for some intents and purposes evaluate to \n
-  fix_line_breaks <- function(l) {
-    if (l == "") {
-      return("")
-    } else {
-     unlist(strsplit(l, "(\\\\)+n"))
-    }
-  }
-
   # This function converts pandoc fenced code-block style headers, to knitr
   # style ones
   detect_and_change_headers <- function(l) {
@@ -128,6 +117,6 @@ pandoc_fenced_to_knitr_block <- function(lines, sub_char = "\u550") {
   }
 
   lines %>%
-    lapply(function(x) fix_line_breaks(detect_and_change_headers(x))) %>%
+    lapply(detect_and_change_headers) %>%
     unlist()
 }

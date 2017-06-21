@@ -99,6 +99,7 @@ md_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
     writeLines(output_file)
 
   output_file
+
 }
 
 
@@ -128,16 +129,29 @@ rmd_to_rmd <- function(input_file, output_file = tempfile(fileext = ".md")) {
 
 # For Rmarkdown ----------------------------------------------------------------
 
-ast_to_rmd <- function(input_file, output_file = tempfile(fileext = ".Rmd")) {
+ast_to_rmd <- function(input_file, output_file = tempfile(fileext = ".Rmd"),
+                       unescape = TRUE) {
+
+  # Sometimes you want to escape strings (usually codeblacks after a diff),
+  # sometimes you don't
+  if (unescape) {
+    unescape_fun <- stringi::stri_unescape_unicode
+  } else {
+    unescape_fun <- function(x) x
+  }
+
+
 
   # Take the pandoc markdown output, and change the pandoc fenced code block
   # attributes back into knitr chunk-option headers
   ast_to_md(input_file) %>%
     readLines() %>%
+    unescape_fun() %>%
     pandoc_fenced_to_knitr_block() %>%
     writeLines(output_file)
 
   output_file
+
 }
 
 
@@ -154,6 +168,7 @@ rmd_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
   # Convert the Rmarkdown file (now with code block headers pandoc can read)
   # into JSON, prettify it, and write to the output file
   md_to_ast(temp_file, output_file)
+
 }
 
 
@@ -180,6 +195,7 @@ ast_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 ##' @param input_file The file you'd like to conver
 ##' @return Used for its side effects
 standardize_rmd <- function(input_file) {
+
   # Extact the yaml header, in order to reattach it later (not preserved)
   partitioned_doc <- partition_yaml_front_matter(readLines(input_file))
   old_body_file   <- tempfile(fileext = ".Rmd")
@@ -188,8 +204,12 @@ standardize_rmd <- function(input_file) {
   # Write the body out to a tempfile for simplicity
   writeLines(partitioned_doc$body, old_body_file)
 
-  # Run the body through the pandoc process, and back again
-  new_body_file <- ast_to_rmd(rmd_to_ast(old_body_file), old_body_file)
+  # Run the body through the pandoc process, and back again. Usually called on
+  # files 'in place' (e.g. which have not yet been through the diffing mange);
+  # no need to unescape unicode chars
+  new_body_file <- ast_to_rmd(
+    rmd_to_ast(old_body_file), old_body_file, unescape = FALSE
+  )
 
   # Add the new, standardised body to the (unchanged YAML front matter)
   partitioned_doc$body <- c("", readLines(new_body_file))
@@ -199,4 +219,5 @@ standardize_rmd <- function(input_file) {
 
   # Log something for the user
   catif(input_file, " converted to standard pandoc markdown")
+
 }

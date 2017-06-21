@@ -138,8 +138,9 @@ gd_pull <- function(file_name) {
   catif("Markdown AST successfully unknit to Rmd AST")
   catif("Attempting to convert the Rmd AST to Rmd")
 
-  # Convert the AST back to Rmarkdown
-  ast_to_rmd(rmd_merged_ast, rmd_merged_body)
+  # Convert the AST back to Rmarkdown (and unescape to remove extra \'s brought
+  # about by diffing)
+  ast_to_rmd(rmd_merged_ast, rmd_merged_body, unescape = TRUE)
 
   catif("Success!")
 
