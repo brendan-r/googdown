@@ -6,6 +6,24 @@ validateYaml <- function(file) {
 }
 
 
+#' Construct Path to File
+#'
+#' A modified version of \code{\link{file.path}}, which prevents \code{fsep}
+#' cropping up more than once.
+#'
+#' @param ... character vectors
+#' @param fsep the path separator to use.
+#'
+#' @return A character vector
+file_path <- function(..., fsep = .Platform$file.sep) {
+  # Do the file.path thing
+  p <- file.path(..., fsep = fsep)
+
+  # Remove any double separators
+  gsub(paste0(fsep, "+"), fsep, p)
+}
+
+
 doc_update_warning <- function() {
 
   # If the user has expressed that they don't want to see all this, proceed
@@ -55,7 +73,6 @@ check_doc_update_warning <- function() {
 #' @param x The text that you'd like to add, e.g. \code{VARIABLE=value}
 #'
 #' @return \code{TRUE} (in)
-#' @export
 add_to_renviron <- function(x) {
   add_line(file_path(Sys.getenv("HOME"), ".Renviron"), x)
 }
