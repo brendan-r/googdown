@@ -1,7 +1,7 @@
 [
-{"unMeta":{}},
+{"unMeta":{"date":{"t":"MetaInlines","c":[{"t":"Str","c":"December"},{"t":"Space","c":[]},{"t":"Str","c":"26,"},{"t":"Space","c":[]},{"t":"Str","c":"2016"}]},"output":{"t":"MetaInlines","c":[{"t":"Str","c":"html_document"}]},"author":{"t":"MetaInlines","c":[{"t":"Str","c":"Jane"},{"t":"Space","c":[]},{"t":"Str","c":"Doe"}]},"title":{"t":"MetaInlines","c":[{"t":"Str","c":"Cool"},{"t":"Space","c":[]},{"t":"Str","c":"file"}]}}},
   [
-{"t":"CodeBlock","c":[["",["r"],[["echo","FALSE"]]],"# This is to test code blocks which produce no output, and so can't easily be\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n# diffed\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\nd <- data.frame(x = rnorm(10), y = rnorm(10))"]},
+{"t":"CodeBlock","c":[["",["r"],[["echo","FALSE"]]],"# This is to test code blocks which produce no output, and so can't easily be\\n# diffed\\nd <- data.frame(x = rnorm(10), y = rnorm(10))"]},
 {"t":"Header","c":[2,["important-subheading",[],[]],[{"t":"Str","c":"Important"},{"t":"Space","c":[]},{"t":"Str","c":"Subheading"}]]},
     {
 "t": "Para",
