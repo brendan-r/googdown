@@ -15,12 +15,13 @@
 ##' @return TRUE (invisibly) if it worked
 remove_docx_bookmarks <- function(input_file) {
   # Do everything in a temp dir, perform operations on a tempfile
-  working_dir <- file.path(tempdir(), digest::digest(stats::runif(1)))
+  working_dir     <- file.path(tempdir(), digest::digest(stats::runif(1)))
+  input_file_full <- normalizePath(input_file)
 
   dir.create(working_dir)
 
   # Unzip it
-  raw_doc_dir <- utils::unzip(input_file, exdir = working_dir)
+  raw_doc_dir <- utils::unzip(input_file_full, exdir = working_dir)
 
   # The file we want to operate on
   document_xml <- file.path(working_dir, "word/document.xml")
@@ -29,7 +30,7 @@ remove_docx_bookmarks <- function(input_file) {
   bookmark_regex <- '<w:bookmarkStart(.+?)<w:bookmarkEnd w:id="[0-9]+"[[:space:]]*/>'
 
   # Read in the document, regex remove all of the bookmarks
-  readLines(document_xml) %>%
+  readLines(document_xml, warn = FALSE) %>%
     stringr::str_replace_all(bookmark_regex, "") %>%
     writeLines(document_xml)
 
@@ -40,7 +41,7 @@ remove_docx_bookmarks <- function(input_file) {
   # though it would slow things down
   wd <- getwd()
   setwd(working_dir)
- utils::zip(input_file, list.files(working_dir))
+  zip::zip(input_file_full, list.files(working_dir))
   setwd(wd)
 
   # Out

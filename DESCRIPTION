@@ -23,7 +23,8 @@ Imports:
     utils,
     stats,
     yaml,
-    magrittr
+    magrittr,
+    zip
 Suggests:
     testthat,
     knitr

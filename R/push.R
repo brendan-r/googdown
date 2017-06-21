@@ -89,7 +89,14 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 
   # Upload & cache -------------------------------------------------------------
 
+  # Remove the annoying and ugly MS Word 'Bookmark links' (helpfully generated
+  # by pandoc, but given far too much visual emphasis by Google)
+  catif("Removing .docx bookmarks")
+  remove_docx_bookmarks(output_file)
+
   # Update / add content to the remote file
+  catif("Uploading to Google")
+
   up_respb <- gd_update(output_file, doc_id)
 
   catif("Google document content successfully updated")
