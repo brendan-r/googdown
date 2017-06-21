@@ -15,7 +15,7 @@
 ##' @return TRUE (invisibly) if it worked
 remove_docx_bookmarks <- function(input_file) {
   # Do everything in a temp dir, perform operations on a tempfile
-  working_dir     <- file.path(tempdir(), digest::digest(stats::runif(1)))
+  working_dir     <- file.path(tempdir(), digest::digest(Sys.time()))
   input_file_full <- normalizePath(input_file)
 
   dir.create(working_dir)
