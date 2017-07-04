@@ -26,11 +26,13 @@ Imports:
     magrittr,
     zip,
     stringi,
-    pandocfilters
+    pandocfilters,
+    bookdown
 Suggests:
     testthat,
     knitr
 VignetteBuilder: knitr
 Encoding: UTF-8
+SystemRequirements: Pandoc (>= 1.17.2)
 LazyData: true
 RoxygenNote: 5.0.1
