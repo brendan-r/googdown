@@ -4,16 +4,14 @@
 \alias{gd_push}
 \title{Push an Rmarkdown document to Google Docs}
 \usage{
-gd_push(file_name, upload_format = getOption("gd.upload_format"),
-  reference_file = NULL)
+gd_push(file_name, bookdown_md = TRUE, reference_docx = NULL)
 }
 \arguments{
 \item{file_name}{An Rmarkdown file}
 
-\item{upload_format}{The format the Rmarkdown document should be converted
-to, prior to upload}
+\item{bookdown_md}{Should markdown extensions by bookdown by used?}
 
-\item{reference_file}{The reference file to be used for styling. The default
+\item{reference_docx}{The reference file to be used for styling. The default
 (\code{NULL}) is to use a template with the same styling as a default
 Google doc, though with slightly nicer figure captions.}
 }

@@ -4,14 +4,13 @@
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @inheritParams google_doc
 #' @export
-gd_push <- function(file_name, upload_format = getOption("gd.upload_format"),
-                      reference_file = NULL) {
+gd_push <- function(file_name, bookdown_md = TRUE,
+                    reference_docx = NULL) {
   rmarkdown::render(
     file_name,
-    output_format = google_doc(reference_file, upload_format)
+    output_format = google_doc(reference_docx, bookdown_md = bookdown_md)
   )
 }
-
 
 ##' googdown pre-knit hook
 ##'
@@ -129,65 +128,49 @@ post_processor <- function(metadata, input_file, output_file, clean, verbose) {
 ##' googdown::google_doc())}. You can also get the same result via
 ##' \code{\link{gd_push}}.
 ##'
-##' @param reference_file The reference file to be used for styling. The default
+##' @param reference_docx The reference file to be used for styling. The default
 ##'   (\code{NULL}) is to use a template with the same styling as a default
 ##'   Google doc, though with slightly nicer figure captions.
-##' @param upload_format The format the Rmarkdown document should be converted
-##'   to, prior to upload
+##' @param bookdown_md Should markdown extensions by bookdown by used?
 ##' @param keep_md Should the intermediate markdown files be retained?
 ##' @param clean_supporting Should other intermediate files be retained?
 ##' @return If successful, the URL of a remote Google document
 ##' @export
-google_doc <- function(reference_file = NULL,
-                       upload_format = getOption("gd.upload_format"),
-                       keep_md = FALSE,
-                       clean_supporting = FALSE) {
-
-  # Check that you can work with the format
-  if (!upload_format %in% c("ms_word_doc", "open_office_doc")) {
-    stop("upload_format must be 'ms_word_doc' or 'open_office_doc'")
-  }
-
-  # Do the thing
-  if (upload_format == "open_office_doc") {
-    google_doc_odt(reference_file, keep_md, clean_supporting)
-  } else if (upload_format == "ms_word_doc") {
-    google_doc_docx(reference_file, keep_md, clean_supporting)
-  }
-
-}
-
-
-#' @keywords internal
-google_doc_odt <- function(reference_odt = NULL, keep_md = FALSE,
-                       clean_supporting = FALSE) {
+google_doc <- function(reference_docx = NULL, bookdown_md = TRUE,
+                       keep_md = FALSE, clean_supporting = FALSE) {
 
   # If no reference doc, use the package default
-  if (is.null(reference_odt)) {
-    reference_odt <- system.file("custom-reference.odt", package = "googdown")
+  if (is.null(reference_docx)) {
+    reference_docx <- system.file("custom-reference.docx", package = "googdown")
   } else {
-    if (!file.exists(reference_odt)) stop(reference_odt, " does not exist")
+    if (!file.exists(reference_docx)) stop(reference_docx, " does not exist")
   }
 
-  # Return an Rmarkdown output format
-  rmarkdown::output_format(
-    knitr            = rmarkdown::knitr_options(
-      opts_chunk = getOption("gd.opts_chunk")
-    ),
-    pandoc           = rmarkdown::pandoc_options(to = "odt"),
-    keep_md          = FALSE,
-    clean_supporting = TRUE,
-    post_processor   = post_processor,
-    pre_knit         = pre_knit,
-    base_format      = rmarkdown::odt_document(reference_odt = reference_odt)
-  )
+  # Change the function you use based whether you'd like to support 'markdown
+  # extensions by bookdown'
+
+  if (bookdown_md) {
+
+    google_doc_bookdown(
+      reference_docx = reference_docx, keep_md = keep_md,
+      clean_supporting = clean_supporting
+    )
+
+  } else {
+
+    google_doc_rmarkdown(
+      reference_docx = reference_docx, keep_md = keep_md,
+      clean_supporting = clean_supporting
+    )
+
+  }
 
 }
 
 
-#' @keywords internal
-google_doc_docx <- function(reference_docx = NULL, keep_md = FALSE,
-                            clean_supporting = FALSE) {
+##' @keywords internal
+google_doc_rmarkdown <- function(reference_docx = NULL, keep_md = FALSE,
+                       clean_supporting = FALSE) {
 
   # If no reference doc, use the package default
   if (is.null(reference_docx)) {
@@ -209,4 +192,47 @@ google_doc_docx <- function(reference_docx = NULL, keep_md = FALSE,
     base_format      = rmarkdown::word_document(reference_docx = reference_docx)
   )
 
+}
+
+
+##' @keywords internal
+google_doc_bookdown <- function(fig_caption = TRUE, md_extensions = NULL,
+                                pandoc_args = NULL, ...) {
+  # Adapted from
+  # https://github.com/rstudio/bookdown/blob/master/R/word.R
+  # @ 7fe1b999ef4bd41671af384ce739812542144df1
+  #
+  # This relies on unexported features from bookdown, so is probably a bad idea
+  # in the long run. Still, it works for now!
+  from_rmarkdown <- utils::getFromNamespace('from_rmarkdown', 'rmarkdown')
+  from           <- from_rmarkdown(fig_caption, md_extensions)
+
+  config <- google_doc_rmarkdown(...)
+
+  pre <- config$pre_processor
+
+  config$pre_processor <- function(metadata, input_file, ...) {
+    # Pandoc does not support numbered sections for Word, so figures/tables have
+    # to be numbered globally from 1 to n
+    bookdown:::process_markdown(input_file, from, pandoc_args, TRUE)
+    if (is.function(pre)) pre(metadata, input_file, ...)
+  }
+
+  post <- config$post_processor
+
+  config$post_processor <- function(metadata, input, output, clean, verbose) {
+
+    if (is.function(post)) {
+      output <- post(metadata, input, output, clean, verbose)
+    }
+
+    bookdown:::move_output(output)
+
+  }
+
+  config$bookdown_output_format <- 'docx'
+
+  config = bookdown:::set_opts_knit(config)
+
+  config
 }

@@ -4,17 +4,15 @@
 \alias{google_doc}
 \title{Convert a Local Rmarkdown File to a remote Google Doc}
 \usage{
-google_doc(reference_file = NULL,
-  upload_format = getOption("gd.upload_format"), keep_md = FALSE,
+google_doc(reference_docx = NULL, bookdown_md = TRUE, keep_md = FALSE,
   clean_supporting = FALSE)
 }
 \arguments{
-\item{reference_file}{The reference file to be used for styling. The default
+\item{reference_docx}{The reference file to be used for styling. The default
 (\code{NULL}) is to use a template with the same styling as a default
 Google doc, though with slightly nicer figure captions.}
 
-\item{upload_format}{The format the Rmarkdown document should be converted
-to, prior to upload}
+\item{bookdown_md}{Should markdown extensions by bookdown by used?}
 
 \item{keep_md}{Should the intermediate markdown files be retained?}
 
