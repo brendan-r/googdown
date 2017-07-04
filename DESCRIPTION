@@ -25,7 +25,8 @@ Imports:
     yaml,
     magrittr,
     zip,
-    stringi
+    stringi,
+    pandocfilters
 Suggests:
     testthat,
     knitr

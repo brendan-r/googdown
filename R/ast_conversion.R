@@ -126,7 +126,6 @@ rmd_to_rmd <- function(input_file, output_file = tempfile(fileext = ".md")) {
 }
 
 
-
 # For Rmarkdown ----------------------------------------------------------------
 
 ast_to_rmd <- function(input_file, output_file = tempfile(fileext = ".Rmd"),
@@ -135,18 +134,18 @@ ast_to_rmd <- function(input_file, output_file = tempfile(fileext = ".Rmd"),
   # Sometimes you want to escape strings (usually codeblacks after a diff),
   # sometimes you don't
   if (unescape) {
-    unescape_fun <- stringi::stri_unescape_unicode
+    unescape_fun <- unescape_ast_stuff
   } else {
     unescape_fun <- function(x) x
   }
 
 
-
   # Take the pandoc markdown output, and change the pandoc fenced code block
   # attributes back into knitr chunk-option headers
-  ast_to_md(input_file) %>%
-    readLines() %>%
+  input_file %>%
     unescape_fun() %>%
+    ast_to_md() %>%
+    readLines() %>%
     pandoc_fenced_to_knitr_block() %>%
     writeLines(output_file)
 
@@ -220,4 +219,110 @@ standardize_rmd <- function(input_file) {
   # Log something for the user
   catif(input_file, " converted to standard pandoc markdown")
 
+}
+
+# fold_ast_json unfortunately introduces some problems: by treating JSON as a
+# string within a 'real' json object, the contents many nodes get double
+# escaped, meaning that strings with newlines end up as \\n, and anything with
+# more than one backslash ends up with double the number it started out with.
+#
+# This function is a dirty hack: it parses the pandoc AST, and un-escapes the
+# contents. The alternative is/was to do this over the entire AST file (but this
+# breaks the JSON), or over the resultant markdown (which has some other
+# undesirable effects). Of all the dirty hacks (aside from re-factoring
+# fold_ast_json), this was the least dirty and the last hackish.
+unescape_ast_stuff <- function(input_file,
+                               output_file = tempfile(fileext = ".ast")) {
+
+  if (!jsonlite::validate(read_txt(input_file))) {
+    stop("Input file is not valid JSON")
+  }
+
+  # Internal convenience function imported from the pandocfilters package
+  Type <- function(x) {
+    structure(list(t = x, c = list()), class = c("Type", "list"))
+  }
+
+  # New constructor, for DisplayMath (seemingly omitted by the particulate
+  # authors, though I might have just missed it)
+  DisplayMath <- function(x) {
+    structure(
+      list(t = "Math", c = list(Type("DisplayMath"), x)),
+      class = c("block", "list")
+    )
+  }
+
+  # A pandoc filter function, to be applied recursively to the AST. Where a
+  # "Math" node is encountered, replace it with a version with unescaped
+  # contents
+  unescape_stuff <- function(key, value, ...) {
+    if (key == "Math") {
+
+      if (value[[1]]$t == "InlineMath") {
+
+        return(pandocfilters::Math(
+          stringi::stri_unescape_unicode(
+            stringi::stri_unescape_unicode(
+              value[[2]]
+            )
+          )
+        ))
+
+      }
+      else if (value[[1]]$t == "DisplayMath") {
+
+        return(DisplayMath(
+          stringi::stri_unescape_unicode(
+            stringi::stri_unescape_unicode(
+              value[[2]]
+            )
+          )
+        ))
+
+      }
+
+    } else if (key == "CodeBlock") {
+
+      return(pandocfilters::CodeBlock(
+        value[[1]], stringi::stri_unescape_unicode(value[[2]])
+      ))
+
+    } else if (key == "Code") {
+
+      return(pandocfilters::Code(
+        stringi::stri_unescape_unicode(
+          stringi::stri_unescape_unicode(
+            value[[2]]
+          )
+        )
+      ))
+
+    } else if (key == "Str") {
+      # This should cover everything else. Doing it twice seems unnecessary. To
+      # be painfully honest you don't understand why.
+      return(pandocfilters::Str(
+        stringi::stri_unescape_unicode(
+          stringi::stri_unescape_unicode(
+            value
+          )
+        )
+      ))
+
+    }
+
+    return(NULL)
+  }
+
+  # Read in the input file, unescape the stuff, write the output file
+  from_json(input_file) %>%
+    pandocfilters::astrapply(unescape_stuff) %>%
+    to_json() %>%
+    writeLines(output_file)
+
+  # Check it worked
+  if (!jsonlite::validate(read_txt(output_file))) {
+    stop("JSON validation lost while unescaping AST contents.")
+  }
+
+  return(output_file)
 }
