@@ -8,3 +8,4 @@ notes.md
 .googdown/*
 ./.googdown
 output.ast
+inst/doc
