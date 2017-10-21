@@ -158,7 +158,16 @@ pandocfilters_wrapper <- function(fun, input_file, output_file) {
 
 
 
-rename_file_with_hash <- function(filepath) {
+rename_file_with_hash <- function(
+  filepath,
+  relative_image_dir = getOption("gd.new_image_path")
+  ) {
+
   ext <- tools::file_ext(filepath)
-  paste0(digest::digest(file = filepath, algo = "md5"), ".", ext)
+
+  file_path(
+    relative_image_dir,
+    paste0(digest::digest(file = filepath, algo = "md5"), ".", ext)
+  )
+
 }
