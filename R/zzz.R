@@ -7,6 +7,7 @@
     gd.download_format = "ms_word_doc",
     gd.upload_format   = "ms_word_doc",
     gd.wrap            = "none",
+    gd.new_image_path  = "./assets",
     gd.opts_chunk      = list(
       dpi        = 600,
       fig.height = 4,
