@@ -22,15 +22,29 @@ odt_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
 }
 
 
-docx_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
+docx_to_md <- function(input_file, output_file = tempfile(fileext = ".md"),
+                       export_image_dir = NULL) {
 
+
+  # If export_image_dir is specified, then create a string to pass to the pandoc
+  # CLI, which will mean that images from the docx will be extracted to
+  # export_image_dir
+  #
+  # Note: Pandoc will export the images to export_image_dir/media
+  if (!is.null(export_image_dir)) {
+    image_dir_pandoc_option <- paste0(
+      "--extract-media=", normalizePath(export_image_dir)
+    )
+  } else {
+    image_dir_pandoc_option <- NULL
+  }
 
   rmarkdown::pandoc_convert(
     input   = input_file,
     output  = output_file,
     from    = "docx",
     to      = "markdown",
-    options = pandoc_options()
+    options = pandoc_options(image_dir_pandoc_option)
   )
 
   output_file
@@ -51,10 +65,11 @@ odt_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 }
 
 
-docx_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
+docx_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast"),
+                        export_image_dir = NULL) {
 
   # Convert to Markdown to to drop unusable metadata
-  temp <- docx_to_md(input_file)
+  temp <- docx_to_md(input_file, export_image_dir = export_image_dir)
 
   # Convert markdown to AST
   md_to_ast(temp, output_file)
