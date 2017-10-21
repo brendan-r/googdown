@@ -81,8 +81,12 @@ docx_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast"),
 
 
 # Take a doc_id, and returns an 'image-hashed' AST
-doc_id_to_ast <- function(doc_id, output_file = tempfile(fileext = ".ast"),
-                          revision = NA) {
+doc_id_to_ast <- function(
+  doc_id,
+  output_file                  = tempfile(fileext = ".ast"),
+  revision                     = NA, pull_in_new_images = FALSE,
+  image_export_comparison_file = NULL
+  ) {
 
   # A tempfile for downloading the docx
   temp_docx_file <- tempfile(fileext = ".docx")
@@ -91,7 +95,12 @@ doc_id_to_ast <- function(doc_id, output_file = tempfile(fileext = ".ast"),
   gd_export(doc_id = doc_id, file_name = temp_docx_file, revision = revision)
 
   # Take the .docx file, and convert to an 'image-hashed' AST
-  remote_docx_to_imagehashed_ast(temp_docx_file, output_file)
+  remote_docx_to_imagehashed_ast(
+    input_file                   = temp_docx_file,
+    output_file                  = output_file,
+    export_new_images            = pull_in_new_images,
+    image_export_comparison_file = image_export_comparison_file
+  )
 
   # Check integrity by running it through pandoc again
   ast_to_ast(output_file, output_file)
