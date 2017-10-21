@@ -20,44 +20,85 @@
 
 
 # A function to accept a downloaded remote docx file, and output its pandoc AST,
-# with the image names replaced by the md5 hashes of thier contents
+# with the image names replaced by the md5 hashes of their contents
 remote_docx_to_imagehashed_ast <- function(
   input_file,
-  output_file = tempfile(fileext = ".ast")
+  output_file                  = tempfile(fileext = ".ast"),
+  export_new_images            = FALSE,
+  image_export_comparison_file = NULL,
+  new_image_export_dir         = getOption("gd.new_image_path")
   ) {
 
-  # Parse image references from document ---------------------------------------
+  # Extract AST, and image files to a temp dir ---------------------------------
 
-  # Do everything in a temp dir, perform operations on a tempfile
-  working_dir     <- file.path(tempdir(), digest::digest(Sys.time()))
-  input_file_full <- normalizePath(input_file)
+  # Create a temporary directory to extract images to
+  temp_image_dir <- file_path(tempdir(), digest::digest(Sys.time()))
 
-  dir.create(working_dir)
+  dir.create(temp_image_dir)
 
-  # Unzip it
-  raw_doc_dir <- utils::unzip(input_file_full, exdir = working_dir)
+  ast_file <- docx_to_ast(input_file, export_image_dir = temp_image_dir)
 
   # The dir containing to the images
   image_files <- list.files(
-    file.path(working_dir, "word/media"), full.names = TRUE
+    file_path(temp_image_dir, "media"), full.names = TRUE
   )
 
   # Relative, not absolute filepaths are used in the ast
-  old_targets <- gsub(".*word/", "", image_files)
+  old_targets <- image_files
   # Locate the files and find their hashes
   new_targets <- unlist(lapply(image_files, rename_file_with_hash))
 
-  # Obtain and alter AST -------------------------------------------------------
-
-  ast_file <- docx_to_ast(input_file)
-
-  # Replace the image targets
+  # Replace the image targets in the AST
   replace_ast_image_targets(
-    input_ast = ast_file, output_ast = output_file, old_targets = old_targets,
+    input_ast   = ast_file,
+    output_ast  = output_file,
+    old_targets = old_targets,
     new_targets = new_targets
   )
 
+  if (!export_new_images) {
+    # If we don't need to export images, just return the path of the AST
+    return(output_file)
+  }
+
+
+  # Extract new images (if required) -------------------------------------------
+
+
+  # If we do, check that a comparison AST has also been provided
+  if (is.null(image_export_comparison_file)) {
+    stop(paste0(
+      "image_export_comparison_file cannot be NULL if export_new_images is ",
+      "TRUE. A comparison file is required to decide which images to export"
+    ))
+  }
+
+  # Extract local image targets
+  existing_local_targets <- extract_ast_image_targets(
+    image_export_comparison_file
+  )
+
+  # Find remote targets which do not already exist in the local file (e.g. are
+  # not generated locally, but have been added to the remote document)
+  newly_added_remote_targets <-
+    new_targets[!new_targets %in% existing_local_targets]
+
+  newly_added_local_filenames <-
+    old_targets[!new_targets %in% existing_local_targets]
+
+  # Ensure that the directory that you want to copy new files into actually
+  # exists
+  dir.create(new_image_export_dir)
+
+  # Copy the new targets to new_image_export_dir
+  mapply(
+    function(from, to) file.copy(from, to, overwrite = TRUE),
+    newly_added_local_filenames,
+    normalizePath(newly_added_remote_targets),
+  )
+
   return(output_file)
+
 }
 
 
