@@ -33,7 +33,7 @@ remote_docx_to_imagehashed_ast <- function(
   # Create a temporary directory to extract images to
   temp_image_dir <- file_path(tempdir(), digest::digest(Sys.time()))
 
-  dir.create(temp_image_dir)
+  dir_create(temp_image_dir)
 
   ast_file <- docx_to_ast(input_file, export_image_dir = temp_image_dir)
 
@@ -87,13 +87,13 @@ remote_docx_to_imagehashed_ast <- function(
 
   # Ensure that the directory that you want to copy new files into actually
   # exists
-  dir.create(new_image_export_dir)
+  dir_create(new_image_export_dir)
 
   # Copy the new targets to new_image_export_dir
   mapply(
     function(from, to) file.copy(from, to, overwrite = TRUE),
     newly_added_local_filenames,
-    normalizePath(newly_added_remote_targets),
+    normalize_path(newly_added_remote_targets)
   )
 
   return(output_file)

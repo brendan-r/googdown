@@ -6,12 +6,21 @@ validateYaml <- function(file) {
 }
 
 
+dir_create <- function(path, ...) {
+  dir.create(path, showWarnings = FALSE, ...)
+}
+
+
 file_path <- function(..., fsep = .Platform$file.sep) {
   # Do the file.path thing
   p <- file.path(..., fsep = fsep)
 
   # Remove any double separators
   gsub(paste0(fsep, "+"), fsep, p)
+}
+
+normalize_path <- function(path) {
+  normalizePath(path, mustWork = FALSE)
 }
 
 
