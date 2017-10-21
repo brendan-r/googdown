@@ -2,8 +2,8 @@
 
 # Small function to return a commonly used pandoc option list
 #' @keywords internal
-pandoc_options <- function() {
-  c("--atx-headers", paste0("--wrap=", getOption("gd.wrap")))
+pandoc_options <- function(...) {
+  c("--atx-headers", paste0("--wrap=", getOption("gd.wrap")), ...)
 }
 
 
