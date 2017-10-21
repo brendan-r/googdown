@@ -18,7 +18,6 @@
 #   after remote modifications, re-ordering, etc.
 
 
-
 # A function to accept a downloaded remote docx file, and output its pandoc AST,
 # with the image names replaced by the md5 hashes of their contents
 remote_docx_to_imagehashed_ast <- function(
@@ -100,6 +99,7 @@ remote_docx_to_imagehashed_ast <- function(
   return(output_file)
 
 }
+
 
 
 

@@ -308,8 +308,7 @@ unescape_ast_stuff <- function(input_file,
           )
         ))
 
-      }
-      else if (value[[1]]$t == "DisplayMath") {
+      } else if (value[[1]]$t == "DisplayMath") {
 
         return(DisplayMath(
           stringi::stri_unescape_unicode(
