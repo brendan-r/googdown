@@ -52,7 +52,7 @@ gd_pull <- function(file_name) {
   # If there are differences, pull the remote AST into the cache
   remote2_ast_path <- tempfile(fileext = ".ast")
 
-  gd_download(doc_id, remote2_ast_path, output_format = "json")
+  doc_id_to_ast(doc_id, remote2_ast_path)
   catif("Downloading remote changes")
 
   # Fold the JSON of the ast files
@@ -251,7 +251,7 @@ cache_version_files <- function(doc_id, source, rendered_md,
 
   # Save the AST of the remote file
   if (is.null(remote_ast)) {
-    remote_ast <- gd_download(doc_id, output_format = "json")
+    remote_ast <- doc_id_to_ast(doc_id)
   }
 
   # Save the Rmd of the original file
@@ -264,7 +264,15 @@ cache_version_files <- function(doc_id, source, rendered_md,
   cache_file(rendered_md, "local.md")
 
   # Save the AST of the knitted file
-  cache_file(md_to_ast(rendered_md), "local.ast")
+  #
+  # Here we're performing the 'image hashing' technique on the AST prior to
+  # saving; when the remote AST is downloaded, image targets are replaced with
+  # the hashes of the images' contents. Here we're replacing the image targets
+  # in the *local* file, with the equivalent hashes in the remote file.
+  rendered_md %>%
+    md_to_ast() %>%
+    imagehash_local_ast_with_equivalent_remote_ast(remote_ast) %>%
+    cache_file("local.ast")
 
   # Save the MD of the remote file
   cache_file(ast_to_md(remote_ast), "remote.md")
