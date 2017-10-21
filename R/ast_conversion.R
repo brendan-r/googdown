@@ -80,6 +80,31 @@ docx_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast"),
 
 
 
+# Take a doc_id, and returns an 'image-hashed' AST
+doc_id_to_ast <- function(doc_id, output_file = tempfile(fileext = ".ast"),
+                          revision = NA) {
+
+  # A tempfile for downloading the docx
+  temp_docx_file <- tempfile(fileext = ".docx")
+
+  # Download the remote google document as a docx file
+  gd_export(doc_id = doc_id, file_name = temp_docx_file, revision = revision)
+
+  # Take the .docx file, and convert to an 'image-hashed' AST
+  remote_docx_to_imagehashed_ast(temp_docx_file, output_file)
+
+  # Check integrity by running it through pandoc again
+  ast_to_ast(output_file, output_file)
+
+  # If you've made it this far without an error, all should be well
+  return(output_file)
+
+}
+
+
+
+
+
 # For markdown -----------------------------------------------------------------
 
 ast_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
