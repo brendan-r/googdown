@@ -4,10 +4,12 @@
 \alias{gd_pull}
 \title{Pull remote changes to a Google Doc to the source Rmarkdown file}
 \usage{
-gd_pull(file_name)
+gd_pull(file_name, find_and_replace = TRUE)
 }
 \arguments{
 \item{file_name}{The path to the Rmarkdown file which you'd like to update}
+
+\item{find_and_replace}{Should a final find-and-replace pass happen?}
 }
 \value{
 \code{TRUE} (invisibly) if successfull, otherwise, an error.

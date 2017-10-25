@@ -234,7 +234,7 @@ pandoc_wrapper <- function(input, output, from, to, options = NULL, verbose = FA
 
   # Wrap in capture.output, to suppress pandoc_convert writing to the console
   # with cat
-  cat_messages <- capture.output(rmarkdown::pandoc_convert(
+  cat_messages <- utils::capture.output(rmarkdown::pandoc_convert(
     input   = input,
     output  = output,
     from    = from,
