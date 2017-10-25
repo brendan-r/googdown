@@ -2,9 +2,10 @@
 #'
 #' @param file_name The path to the Rmarkdown file which you'd like to update
 #'
+#' @param find_and_replace Should a final find-and-replace pass happen?
 #' @return \code{TRUE} (invisibly) if successfull, otherwise, an error.
 #' @export
-gd_pull <- function(file_name) {
+gd_pull <- function(file_name, find_and_replace = TRUE) {
 
   # For magirttr / R CMD CHECK
   . <- NULL
@@ -165,15 +166,19 @@ gd_pull <- function(file_name) {
     getOption("gd.cache"), doc_id, paste0(local_rev, "-local.md")
   )
 
-  found_anything <- final_find_and_replace_pass(
-    merged_rmd_file = rmd_merged_body,
-    local_md        = local_md,
-    source_rmd      = source_rmd,
-    output_file     = rmd_merged_body
-  )
 
-  if(found_anything) catif("Additional changes made during a final find and",
-                           " replace pass")
+  if (find_and_replace) {
+
+    found_anything <- final_find_and_replace_pass(
+      merged_rmd_file = rmd_merged_body,
+      local_md        = local_md,
+      source_rmd      = source_rmd,
+      output_file     = rmd_merged_body
+    )
+
+    if(found_anything) catif("Additional changes made during a final find and",
+                             " replace pass")
+  }
 
   catif("Success!")
 
