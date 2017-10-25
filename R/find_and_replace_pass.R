@@ -38,7 +38,7 @@ extract_knitr_generated_output <- function(source_rmd, local_md) {
       }
     ) %>%
     # Remove any diffs where the result is ""
-    Filter(function(x) grepl(x$output_lines, "[[:space:]]"), .)
+    Filter(function(x) grepl(x$output_lines, "^[[:space:]]*$"), .)
 
 }
 
