@@ -168,7 +168,7 @@ google_doc <- function(reference_docx = NULL, bookdown_md = TRUE,
 }
 
 
-##' @keywords internal
+
 google_doc_rmarkdown <- function(reference_docx = NULL, keep_md = FALSE,
                        clean_supporting = FALSE) {
 
@@ -195,7 +195,31 @@ google_doc_rmarkdown <- function(reference_docx = NULL, keep_md = FALSE,
 }
 
 
-##' @keywords internal
+
+bookdown_process_markdown_wrapper <- function(...) {
+
+  # Try and call bookdown:::process_markdown, capture the error message
+  attempt <- try(bookdown:::process_markdown(...))
+
+  # If you encountered an error, grep the contents to see if it's the one about
+  # multiple labels, which occurs as a result of having multiple plots per chunk
+  if ("try-error" %in% class(attempt)) {
+    if (grepl("multiple labels", attempt[1])) {
+      # If it is, provide something more informative for the user
+      stop("bookdown for googdown does not support multiple plots per chunk!")
+    } else {
+      # Otherwise, fail with something generic, but try and provide a helpful
+      # suggestion
+      stop("Error processing with bookdown. Try using bookdown_md = FALSE")
+    }
+  }
+
+  # If no error was encountered, return the result
+  return(attempt)
+}
+
+
+
 google_doc_bookdown <- function(fig_caption = TRUE, md_extensions = NULL,
                                 pandoc_args = NULL, ...) {
   # Adapted from
@@ -214,7 +238,9 @@ google_doc_bookdown <- function(fig_caption = TRUE, md_extensions = NULL,
   config$pre_processor <- function(metadata, input_file, ...) {
     # Pandoc does not support numbered sections for Word, so figures/tables have
     # to be numbered globally from 1 to n
-    bookdown:::process_markdown(input_file, from, pandoc_args, TRUE)
+
+    bookdown_process_markdown_wrapper(input_file, from, pandoc_args, TRUE)
+
     if (is.function(pre)) pre(metadata, input_file, ...)
   }
 
