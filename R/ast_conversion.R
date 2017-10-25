@@ -9,7 +9,7 @@ pandoc_options <- function(...) {
 
 odt_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
 
-  rmarkdown::pandoc_convert(
+  pandoc_wrapper(
     input   = input_file,
     output  = output_file,
     from    = "odt",
@@ -17,9 +17,8 @@ odt_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
     options = pandoc_options()
   )
 
-  output_file
-
 }
+
 
 
 docx_to_md <- function(input_file, output_file = tempfile(fileext = ".md"),
@@ -39,15 +38,13 @@ docx_to_md <- function(input_file, output_file = tempfile(fileext = ".md"),
     image_dir_pandoc_option <- NULL
   }
 
-  rmarkdown::pandoc_convert(
+  pandoc_wrapper(
     input   = input_file,
     output  = output_file,
     from    = "docx",
     to      = "markdown",
     options = pandoc_options(image_dir_pandoc_option)
   )
-
-  output_file
 
 }
 
@@ -60,8 +57,6 @@ odt_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
   # Convert markdown to AST
   md_to_ast(temp, output_file)
 
-  output_file
-
 }
 
 
@@ -73,8 +68,6 @@ docx_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast"),
 
   # Convert markdown to AST
   md_to_ast(temp, output_file)
-
-  output_file
 
 }
 
@@ -118,7 +111,7 @@ doc_id_to_ast <- function(
 
 ast_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
 
-  rmarkdown::pandoc_convert(
+  pandoc_wrapper(
     input   = input_file,
     output  = output_file,
     from    = "json",
@@ -126,15 +119,13 @@ ast_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
     options = pandoc_options()
   )
 
-  output_file
-
 }
 
 
 md_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 
 
-  rmarkdown::pandoc_convert(
+  pandoc_wrapper(
     input   = input_file,
     output  = output_file,
     from    = "markdown",
@@ -156,15 +147,13 @@ md_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 # 'standardize' the markdown conventions used
 md_to_md <- function(input_file, output_file = tempfile(fileext = ".md")) {
 
-  rmarkdown::pandoc_convert(
+  pandoc_wrapper(
     input   = input_file,
     output  = output_file,
     from    = "markdown",
     to      = "markdown",
     options = pandoc_options()
   )
-
-  output_file
 
 }
 
@@ -225,7 +214,7 @@ rmd_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 
 ast_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 
-  rmarkdown::pandoc_convert(
+  pandoc_wrapper(
     input   = input_file,
     output  = output_file,
     from    = "json",
@@ -233,9 +222,36 @@ ast_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
     options = pandoc_options()
   )
 
-  output_file
-
 }
+
+
+# A wrapper function around rmarkdown::pandoc_convert
+#
+# Makes fewer parameters optional, attempts (though fails) to suppress system
+# writing to the console
+pandoc_wrapper <- function(input, output, from, to, options = NULL, verbose = FALSE,
+                           ...) {
+
+  # Wrap in capture.output, to suppress pandoc_convert writing to the console
+  # with cat
+  cat_messages <- capture.output(rmarkdown::pandoc_convert(
+    input   = input,
+    output  = output,
+    from    = from,
+    to      = to,
+    options = options,
+    verbose = verbose,
+    ...
+  ))
+
+  # For more verbose usage, print out the text originally sent via cat
+  if (verbose)
+    for (i in 1:length(cat_messages))
+      cat("pandoc: ", cat_messages[i], "\n")
+
+  return(output)
+}
+
 
 
 ##' Convert a file to commonmark, using system pandoc
