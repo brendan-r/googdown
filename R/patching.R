@@ -1,5 +1,5 @@
 #' @keywords internal
-patch <- function(file1, file2, difflist, patched_file) {
+patch <- function(file1, file2, difflist, patched_file, test = FALSE) {
 
   patch_strings(file1, file2, difflist) %>%
     # Mush back into a single string to fix (this is so that you can detect
@@ -11,7 +11,11 @@ patch <- function(file1, file2, difflist, patched_file) {
     writeLines(patched_file)
 
   # Run it through pandoc once more, just to tidy up the AST
-  ast_to_ast(patched_file)
+  if (test) {
+    ast_to_ast(patched_file)
+  } else {
+    patched_file
+  }
 }
 
 
