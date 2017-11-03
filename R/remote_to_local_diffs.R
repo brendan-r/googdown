@@ -36,7 +36,7 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
   # equivalents in local1
   map_ind <- function(x) {
     if (any(is.na(x))) return(NA)
-    map$file2[x]
+    as.numeric(na.omit(map$file2[x]))
   }
 
 
@@ -77,10 +77,11 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
   # The line numbers for the remote1 - remote2 diff, but with remote1's line
   # numbers replaced with the equivalents (where available) from local1
-  offset_diff <- filtered_diff %>%
-    lapply(function(x){
+  offset_diff <-
+    filtered_diff %>%
+    lapply(function(x) {
       x$file1_at     <- max(map_ind2(x$file1_at))
-      x$file1_remove <- map_ind2(x$file1_remove)
+      x$file1_remove <- map_ind(x$file1_remove)
       x
     })
 
