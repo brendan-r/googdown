@@ -38,7 +38,7 @@ extract_knitr_generated_output <- function(source_rmd, local_md) {
       }
     ) %>%
     # Remove any diffs where the result is ""
-    Filter(function(x) grepl(x$output_lines, "^[[:space:]]*$"), .)
+    Filter(function(x) !grepl("^[[:space:]]*$", x$output_lines), .)
 
 }
 
@@ -65,6 +65,11 @@ final_find_and_replace_pass <- function(
   # are actually made
   any_changes_made <- FALSE
 
+  if (length(knit_diffs) < 1L) {
+    writeLines(merged_rmd_file, output_file)
+    return(any_changes_made)
+  }
+
   for (i in 1:length(knit_diffs)) {
 
     # How many times is the pattern in the diff matched?
@@ -74,7 +79,7 @@ final_find_and_replace_pass <- function(
 
     # If it isn't matched (this should happen most of the time), move to the
     # next iteration of the loop
-    if (n_matches == 0L) next
+    if (is.na(n_matches) || n_matches == 0L) next
 
     # If it's matched more than once, this is unusual. Issue a warning but
     # proceed
