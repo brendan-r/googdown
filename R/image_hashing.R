@@ -85,6 +85,11 @@ remote_docx_to_imagehashed_ast <- function(
   newly_added_local_filenames <-
     old_targets[!new_targets %in% existing_local_targets]
 
+  # If there's no newly added remote targets, you can exit here
+  if (is.null(newly_added_remote_targets)) {
+    return(output_file)
+  }
+
   # Ensure that the directory that you want to copy new files into actually
   # exists
   dir_create(new_image_export_dir)
