@@ -1,3 +1,41 @@
+# A function to warn about (and filter) impossible diffs
+filter_impossible_edits <- function(offset_difflist, original_difflist,
+                                    file2) {
+
+  output_difflist <- list()
+
+  for (i in 1:length(offset_difflist)) {
+
+    if (
+      # If it's a change (as opposed to add/remove) diff
+      offset_difflist[[i]]$type == "c" &
+        # And there are zero non-NA lines to change
+        length(offset_difflist[[i]]$file2_remove) == 0L
+    ) {
+
+      # Find the lines where a change has been attempted
+      attempt_lines <- readLines(file2)[remote_diff[[i]]$file2_add]
+
+      warning(
+        "It looks like remote content in the Google doc which doesn't have an ",
+        "direct equivalent in the .Rmd file was edited. Obviously these can't ",
+        "be merged back in. Discarding the following changed line(s), and ",
+        "attempting to merge the rest:\n\n",
+        attempt_lines
+      )
+
+      output_difflist[[i]] <- NULL
+    } else {
+      output_difflist[[i]] <- offset_difflist[[i]]
+    }
+  }
+
+  # Filter out the NULL entries
+  output_difflist %>%
+    Filter(function(x) !is.null(x), .)
+}
+
+
 # Note: Currently the is.na statements in the below are throwing warnings, but
 # the behavior is as desired. Possibly worth wrapping in a suppressWarnings call
 #' @keywords internal
@@ -85,9 +123,22 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
       x
     })
 
+  # If at this point, you have a change diff with zero non-NA replacements (or,
+  # entries in diff$file_2_remove), then this is an attempt to change remote
+  # content, that can't work. Here issue a warning, and remove that diff from
+  # the list.
+  possible_diff <- filter_impossible_edits(offset_diff, filtered_diff, remote2)
+
+
+  # If there are no diffs to patch, write local1 to output file and print a
+  # message
+  file.copy(local1, output_file, overwrite = TRUE)
+  message("No diffs that can be merged detected")
+  return(output_file)
+
   # Apply the offset diff object (containing the diffs between the two remote
   # files), and use it to apply a patch to the original markdown source
-  patch(local1, remote2, offset_diff, output_file)
+  patch(local1, remote2, possible_diff, output_file)
 }
 
 
