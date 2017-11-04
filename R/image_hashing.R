@@ -132,6 +132,37 @@ imagehash_local_ast_with_equivalent_remote_ast <- function(
 
 
 
+
+# For some reason, when it detects a single image surrounded by prose, Pandoc
+# adds an image caption (not capable of being represented via markdown) of
+# "fig:" to it.
+#
+# It does *not* do this where you have consecutive images, for some reason.
+#
+# This breaks some of your diffing logic when converting asts to mds and back again
+remove_ast_image_captions <- function(input_ast,
+                                      output_ast = tempfile(fileext = ".ast")) {
+
+
+  # A small 'pandoc filter', should replace all images with caption-less
+  # versions of themselves
+  remove_captions <- function(key, value, ...) {
+    if (key == "Image") {
+      # The target of the image should always be in value[[3]][[1]]
+      return(
+        pandocfilters::Image(value[[3]][[1]], text = NULL, caption = "")
+      )
+    }
+    return(NULL)
+  }
+
+  pandocfilters_wrapper(remove_captions, input_ast, output_ast)
+
+  output_ast
+}
+
+
+
 # Given an AST, a list of existing image targets, and a list of replacements for
 # them, make the replacements, and write the new ast to output_ast.
 #
