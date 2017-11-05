@@ -232,22 +232,15 @@ ast_to_ast <- function(input_file, output_file = tempfile(fileext = ".ast")) {
 pandoc_wrapper <- function(input, output, from, to, options = NULL, verbose = FALSE,
                            ...) {
 
-  # Wrap in capture.output, to suppress pandoc_convert writing to the console
-  # with cat
-  cat_messages <- utils::capture.output(rmarkdown::pandoc_convert(
-    input   = input,
+rmarkdown::pandoc_convert(
+    input   = normalizePath(input),
     output  = output,
     from    = from,
     to      = to,
     options = options,
     verbose = verbose,
     ...
-  ))
-
-  # For more verbose usage, print out the text originally sent via cat
-  if (verbose)
-    for (i in 1:length(cat_messages))
-      cat("pandoc: ", cat_messages[i], "\n")
+  )
 
   return(output)
 }
