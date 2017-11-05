@@ -10,7 +10,7 @@ filter_impossible_edits <- function(offset_difflist, original_difflist,
       # If it's a change (as opposed to add/remove) diff
       offset_difflist[[i]]$type == "c" &
         # And there are zero non-NA lines to change
-        length(offset_difflist[[i]]$file2_remove) == 0L
+        length(offset_difflist[[i]]$file1_remove) == 0L
     ) {
 
       # Find the lines where a change has been attempted
