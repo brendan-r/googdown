@@ -81,6 +81,17 @@ gd_pull <- function(file_name, find_and_replace = TRUE) {
 
   catif("Attempting to merge remote and local markdown files")
 
+  ## # Attempt merging remote and local markdown files
+  ## markdown_merge_attempt <- try(
+  ##   silent = TRUE,
+  ##   remote_diff_to_local(
+  ##     remote1     = remote1_ast_path,
+  ##     local1      = local1_ast_path,
+  ##     remote2     = remote2_ast_path,
+  ##     output_file = md_merged_ast
+  ##   )
+  ## )
+
   local1_md_path <- ast_to_md(local1_ast_path)
   remote1_md_path <- ast_to_md(remote1_ast_path)
   remote2_md_path <- ast_to_md(remote2_ast_path)

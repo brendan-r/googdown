@@ -24,7 +24,7 @@ patch_strings <- function(file1, file2, difflist) {
   l1 <- readLines(file1)
   l2 <- readLines(file2)
 
-  # Helper functions ---------------------------------
+  # Helper functions -----------------------------------------------------------
   delete_lines <- function(x, indicies) {
     x[-indicies]
   }
@@ -34,7 +34,8 @@ patch_strings <- function(file1, file2, difflist) {
   }
 
   change_lines <- function(x, indicies, lines) {
-    x %>% delete_lines(indicies) %>%
+    x %>%
+      delete_lines(indicies) %>%
       add_lines(lines, at = min(indicies))
   }
 
@@ -46,7 +47,7 @@ patch_strings <- function(file1, file2, difflist) {
     difflist %>% lapply(function(x) x$file1_at) %>% unlist - 1, length(l1)
   )
 
-  # Iterate ------------------------------------------
+  # Iterate --------------------------------------------------------------------
 
   # Init the list for the parts to join up
   parts <- list()
@@ -60,6 +61,7 @@ patch_strings <- function(file1, file2, difflist) {
   }
 
   for (l in 1:length(difflist)) {
+
     d <- difflist[[l]]
 
     if (d$type == "c") {
