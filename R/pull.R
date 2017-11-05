@@ -166,23 +166,18 @@ gd_pull <- function(file_name, find_and_replace = TRUE) {
   # about by diffing)
   ast_to_rmd(rmd_merged_ast, rmd_merged_body, unescape = TRUE)
 
-
   # Perform a final find-and-replace pass, in case any dynamic output has not
   # been detected by diffing (e.g. if charts have become re-ordered)
   source_rmd <- file_path(
     getOption("gd.cache"), doc_id, paste0(local_rev, "-source.Rmd")
   )
 
-  local_md <- file_path(
-    getOption("gd.cache"), doc_id, paste0(local_rev, "-local.md")
-  )
-
-
+  # Perform a final find-and-replace pass if desired
   if (find_and_replace) {
 
     found_anything <- final_find_and_replace_pass(
       merged_rmd_file = rmd_merged_body,
-      local_md        = local_md,
+      local_md        = remote1_md_path,
       source_rmd      = source_rmd,
       output_file     = rmd_merged_body
     )
