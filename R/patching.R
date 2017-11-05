@@ -30,8 +30,7 @@ patch_strings <- function(file1, file2, difflist) {
   }
 
   add_lines <- function(x, lines, at) {
-    line_list <- split(x, 1:length(x) >= at)
-    c(line_list[[1]], lines, line_list[[2]])
+    append(x, values = lines, after = at - 1)
   }
 
   change_lines <- function(x, indicies, lines) {
