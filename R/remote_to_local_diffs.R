@@ -132,9 +132,11 @@ remote_diff_to_local <- function(remote1, local1, remote2, output_file) {
 
   # If there are no diffs to patch, write local1 to output file and print a
   # message
-  file.copy(local1, output_file, overwrite = TRUE)
-  message("No diffs that can be merged detected")
-  return(output_file)
+  if (length(possible_diff) == 0L) {
+    file.copy(local1, output_file, overwrite = TRUE)
+    message("No diffs that can be merged detected")
+    return(output_file)
+  }
 
   # Apply the offset diff object (containing the diffs between the two remote
   # files), and use it to apply a patch to the original markdown source
