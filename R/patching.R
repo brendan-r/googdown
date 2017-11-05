@@ -50,8 +50,14 @@ patch_strings <- function(file1, file2, difflist) {
 
   # Init the list for the parts to join up
   parts <- list()
-  # Add the first chunk (the source before any diffs happen)
-  parts[[1]] <- l1[ast_chunk_start[1]:ast_chunk_end[1]]
+  # Add the first chunk (the source before any diffs happen). If the very first
+  # line is involved in a diff, then just add NULL which will shake-out via
+  # the call to 'unlist' at the end
+  if (ast_chunk_end[1] > 1) {
+    parts[[1]] <- l1[ast_chunk_start[1]:ast_chunk_end[1]]
+  } else {
+    parts[[1]] <- NULL
+  }
 
   for (l in 1:length(difflist)) {
     d <- difflist[[l]]
