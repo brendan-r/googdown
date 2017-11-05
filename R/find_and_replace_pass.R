@@ -14,7 +14,7 @@ extract_knitr_generated_output <- function(source_rmd, local_md) {
       function(x) {
         # Do any of the lines begin with something that looks like an R chunk?
         any(grepl(
-          "```[[:space:]]*\\{r.*\\}[[:space:]]*$",
+          "```[[:space:]]*\\{r.*\\}[[:space:]]*$|\\(ref:.*\\)",
           source_lines[x$file1_remove]
         )) &
           # And, are they also changes, e.g. something from the source code has
